@@ -34,7 +34,7 @@ mods/image-viewer 是 dougcunha/herdr-mods 的 Image Viewer
 mods/excalidraw 打包了 Excalidraw（MIT），mods/file-icons 打包了 Material Icon Theme
 （MIT）的图标；声明见各自文件夹。
 
-skills/herdr-cowork/SKILL.md 来自 ninehills 的 gist（v1.1.0，
+skills/herdr-cowork/SKILL.md 来自 ninehills 的 gist（v1.3.0，
 https://gist.github.com/ninehills/eef70810238f779362a820786ae4a096）；上游未声明许可。
 仅其 frontmatter 的 name 字段有改动（cowork → herdr-cowork）。
 
