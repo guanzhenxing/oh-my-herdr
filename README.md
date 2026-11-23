@@ -1,6 +1,6 @@
 # oh-my-herdr
 
-一个 Herdr Desktop 布局，参照 Orca 应用设计：项目侧栏内嵌 worktree，并挂各自的 issue/PR 徽章；每个条目下方直接列出它的 agent 和子代理；space 可以休眠、重启后恢复 agent；带资源占用表、每个 worktree 的悬停卡片、应用内的 GitHub issues 和 pull requests、Create worktree 对话框（可从分支、issue、PR 或新名字创建）、Files 与 Git changes 面板、运行按钮、用量窗口、实时端口，以及参照 Orca「代理会话历史」的会话历史面板（扫描 Claude、Codex、Pi、OMP、Gemini、OpenCode、ZCode 等本机 transcript 存储，可搜索、过滤、一键恢复、在工作树中恢复、移交给另一个代理、打开日志查看器；侧栏 Sessions 入口或 cmd-shift-h 打开）。
+一个 Herdr Desktop 布局，参照 Orca 应用设计：项目侧栏内嵌 worktree，并挂各自的 issue/PR 徽章；每个条目下方直接列出它的 agent 和子代理；space 可以休眠、重启后恢复 agent；带资源占用表、每个 worktree 的悬停卡片、应用内的 GitHub issues 和 pull requests、Create worktree 对话框（可从分支、issue、PR 或新名字创建）、Files 与 Git changes 面板、用量窗口、实时端口，以及参照 Orca「代理会话历史」的会话历史面板（扫描 Claude、Codex、Pi、OMP、Gemini、OpenCode、ZCode 等本机 transcript 存储，可搜索、过滤、一键恢复、在工作树中恢复、移交给另一个代理、打开日志查看器；侧栏 Sessions 入口或 cmd-shift-h 打开）。
 
 ![oh-my-herdr](preview.png)
 

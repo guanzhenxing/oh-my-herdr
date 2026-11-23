@@ -17,7 +17,7 @@
   - **Agents** 标签（`oh-my-sidebar`，`view: agents`）：侧栏的两个列表是共享全高的两个标签——每个视图在自己的头部绘制 **Spaces | Agents** 分段标签栏（激活实色，未激活灰暗；对 `sidebar-lists` 堆栈用 `layout.select`）。Spaces 标签的头部保留 New folder / New space；Agents 标签的头部保留排序菜单（priority、grouped、main space、prefix）；分组只靠各自的组头区分，如同 Spaces 列表的分节。
     一个页脚（`view: footer`）：左侧 **Settings** 和 **Mod settings**（即收编的 `better-config`）两个图标按钮（tooltip 标明名称），右侧「3 agents · 2 need you」，再加 Add machine。
   - 休眠中的 space 在第二行显示月亮和 **Asleep**。
-- **Tab 栏**（42px）：侧栏恢复开关，仅在侧栏隐藏时显示（显示侧栏时，Herdr 的品牌按钮负责隐藏，保证屏上同一时刻只有一个开关；点 Herdr 品牌按钮出现的竖条变成隐藏），space 各 tab 的 `my-tabs` 药丸；一个 **▶ Dev | ▾** 运行按钮（`t3-actions`，108px）；右面板开关（36px）。面板的 Files / Changes / Excalidraw 控件不在这行——它们在右面板自己的头部（`panel-head`，Orca 式）。
+- **Tab 栏**（42px）：侧栏恢复开关，仅在侧栏隐藏时显示（显示侧栏时，Herdr 的品牌按钮负责隐藏，保证屏上同一时刻只有一个开关；点 Herdr 品牌按钮出现的竖条变成隐藏），space 各 tab 的 `my-tabs` 药丸；右面板开关（36px）。面板的 Files / Changes / Excalidraw 控件不在这行——它们在右面板自己的头部（`panel-head`，Orca 式）。
 - **主区**：活动 tab 的 pane 以卡片呈现（圆角 10，间距 8，1px `border`，聚焦时 `accent`，单独时也有边框），配 30px 的 `my-pane` 头部：程序图标、agent 名称、目录、状态，右侧是分屏/缩放/关闭。
 - **右面板**（368px，280–900，切换前隐藏）：30px 的 `panel-head`（Orca 式面板头部：**Files | Changes** 分段切换 `panel-body` 堆栈、Excalidraw 图标、✕ 收起）+ **Files**（`files-open-with`）与 **Changes**（收编的 `better-changes`）的堆栈。
 - **状态栏**（28px）：Claude Code / Codex 用量窗口（`usage-limits`，左侧）、命令与机器（`my-status`）、**资源占用表**（`resources`，150px：活动图标、`CPU 12% · 3.8 GB`）和**实时端口**计数按钮（`live-ports`，64px）。
@@ -78,7 +78,7 @@
   （终端与 space 菜单；`terminal_menu: "my-menu"`）、`my-new-menu`、`my-worktree`（删除确认）：Herdr mod 的修改克隆。
 - `issues`（表格、查看器、`projects.js`、`pr.js`、`start.js`、`prefill.sh`）、`new-worktree`（对话框、`git.js`、
   `hooks.js`）、`project-settings`（共用同一份 `hooks.js`：保持两份一致）、
-  `files-open-with`（+ Material 图标的 `file-icons`）、`t3-actions`、`sidebar-nav`、
+  `files-open-with`（+ Material 图标的 `file-icons`）、`sidebar-nav`、
   `automations`、`usage-limits`（`helpers/*.sh`）、`live-ports`、`desktop-notifications`、
   `hibernate`（`core.js` 快照/停止/启动、`ui.js` 对话框、与
   `oh-my-sidebar` 共享的 `settings.js`）、`resources`（`measure.js`）、

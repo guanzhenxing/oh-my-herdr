@@ -102,21 +102,6 @@
                   "window_drag": true
                 },
                 {
-                  "id": "actions",
-                  "type": "block",
-                  "size": {
-                    "px": 108
-                  },
-                  "window_drag": true,
-                  "background": "chrome",
-                  "content": {
-                    "mod": "t3-actions",
-                    "props": {
-                      "block": "actions"
-                    }
-                  }
-                },
-                {
                   "id": "panel-toggle",
                   "type": "block",
                   "content": {
