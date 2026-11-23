@@ -8,8 +8,9 @@ import { v_flex } from "gpui-base";
 import { appHome, closeOverlay, exec, focused, hc, props, readTextFile, spaces, theme, window as appWindow } from "herdr";
 import { folderUri, protocolUrl, resolveHost } from "./uri.js";
 
-// A single-quoted PowerShell string.
-const ps = (s) => `'${s.replaceAll("'", "''")}'`;
+// A single-quoted PowerShell string. PowerShell also takes the curly quotes
+// ‘ ’ ‚ ‛ as single quotes: they are doubled too.
+const ps = (s) => `'${s.replace(/['\u2018-\u201B]/g, "$&$&")}'`;
 
 async function launch(folder, host) {
   const uri = folderUri(folder, host);

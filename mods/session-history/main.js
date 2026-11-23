@@ -84,14 +84,14 @@ const shq = (s) => `'${String(s).replace(/'/g, `'\\''`)}'`;
 function copyText(text) {
   const t = String(text);
   if (PLATFORM() === "windows") {
-    return exec("powershell", ["-NoProfile", "-Command", `Set-Clipboard -Value '${t.replace(/'/g, "''")}'`]).catch(() => {});
+    return exec("powershell", ["-NoProfile", "-Command", `Set-Clipboard -Value '${t.replace(/['\u2018-\u201B]/g, "$&$&")}'`]).catch(() => {});
   }
   return exec("bash", ["-c", `printf %s ${shq(t)} | pbcopy 2>/dev/null || printf %s ${shq(t)} | xclip -selection clipboard 2>/dev/null || printf %s ${shq(t)} | wl-copy 2>/dev/null`]).catch(() => {});
 }
 
 function revealPath(p) {
   if (PLATFORM() === "windows") {
-    return exec("powershell", ["-NoProfile", "-Command", `Start-Process explorer.exe -ArgumentList '/select,"${String(p).replace(/'/g, "''")}"'`]).catch(() => {});
+    return exec("powershell", ["-NoProfile", "-Command", `Start-Process explorer.exe -ArgumentList '/select,"${String(p).replace(/['\u2018-\u201B]/g, "$&$&")}"'`]).catch(() => {});
   }
   if (PLATFORM() === "macos") {
     return exec("open", ["-R", String(p)]).catch(() => {});
