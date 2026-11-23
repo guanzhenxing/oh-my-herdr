@@ -19,6 +19,8 @@ import {
   layout,
 } from "herdr";
 import { findNode, hasSpacesView } from "./find-node.js";
+import { loadSettings } from "../settings.js";
+import { DEFAULT_SETTINGS } from "../defaults.js";
 import { TEXT, Icon, IconButton, GroupHeader, Menu, MenuLabel, MenuOption } from "./ui.js";
 import { ListTabs, activeListTab } from "./list-tabs.js";
 
@@ -37,7 +39,9 @@ function toggleSidebar() {
   });
 }
 
-const clean = (s) => (s ?? "").replace(/^[^\p{L}\p{N}]+/u, "").trim();
+// Drops a status glyph, keeps a leading bracket or quote ("[web] login"), and
+// takes Codex's "[ ! ] " mark off, as Herdr's own panel does.
+const clean = (s) => (s ?? "").replace(/^[^\p{L}\p{N}\p{Ps}\p{Pi}]+/u, "").replace(/^\[ [!.] \] /, "").trim();
 
 export function lead(tab, all = panes()) {
   const mine = all.filter((p) => p.tab === tab.id && p.terminal);
@@ -217,7 +221,14 @@ export class Agents {
     // Each agent's last state and when it changed (ms), kept across restarts.
     this.changed = JSON.parse(localStorage.getItem("changed") ?? "{}");
     this.pins = JSON.parse(localStorage.getItem("pins") ?? "[]");
+    this.nameBy = DEFAULT_SETTINGS.agent_name;
     cx.timer.every(30000, (cx) => cx.notify());
+    // The spaces view reports problems with the settings; this one only needs the name.
+    cx.spawn(async (cx) => {
+      const { settings } = await loadSettings("oh-my-sidebar", DEFAULT_SETTINGS);
+      this.nameBy = settings.agent_name;
+      cx.notify();
+    });
   }
 
   // Stamps agents whose state changed. Done and idle count as one: looking at a
@@ -646,13 +657,16 @@ export class Agents {
 
   // Under a space header the space goes without saying; an automatic tab number
   // says nothing. Without one above (priority, pinned) the row names its space.
+  // With `agent_name: "title"` the row says the terminal's live title — what the
+  // agent says it's doing — falling back to the name it would otherwise carry.
   agentName(a, view, t) {
     const more = view.details.get(a.address);
     const label = view.label(a);
     const namesSpace = view.sort.id !== "grouped" || this.pins.includes(a.address);
-    const name = namesSpace
+    let name = namesSpace
       ? a.space_name || label
       : (more ?? (/^\d+$/.test(label) ? a.program?.name || label : label));
+    if (this.nameBy === "title") name = clean(a.title) || name;
     const idle = a.status === "idle" && !a.focused;
     return h_flex()
       .flex_1()

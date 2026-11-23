@@ -6,6 +6,7 @@
     "git": {
       "retry_after": "15s"
     },
-    "pull_request_status": true
+    "pull_request_status": true,
+    "agent_name": "tab"
   }
 }

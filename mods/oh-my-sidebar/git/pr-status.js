@@ -40,7 +40,7 @@ function standFor(prs) {
 }
 export const prPlaceKey = (machine, folder) => JSON.stringify([machine ?? null, folder]);
 const PR_FIELDS =
-  "id,number,title,url,state,isDraft,headRefName,headRepository,updatedAt,statusCheckRollup,body,closingIssuesReferences";
+  "id,number,title,url,state,isDraft,headRefName,headRepository,updatedAt,statusCheckRollup,reviewDecision,mergeStateStatus,body,closingIssuesReferences";
 const CLOSES = /\b(?:close[sd]?|fix(?:e[sd])?|resolve[sd]?):?\s+([\w.-]+\/[\w.-]+)?#(\d+)/i;
 // issue-12-title, feat/393, 393-fix: a number that starts a branch path segment.
 const BRANCH_NUMBER = /(?:^|\/)(?:issue-|gh-)?(\d+)(?=$|[-_/])/;
@@ -55,11 +55,14 @@ export function prAppearance(pr, colors) {
       String(check.conclusion || check.state || check.status).toUpperCase(),
     ),
   );
-  return {
-    icon: "pull-request",
-    color: failed ? colors.ansi1 : colors.ansi2,
-    label: failed ? "Checks failed" : "Open",
-  };
+  const open = (color, label, ready = false) => ({ icon: "pull-request", color, label, ready });
+  if (pr.mergeStateStatus === "DIRTY") return open(colors.ansi1, "Conflicts");
+  if (failed) return open(colors.ansi1, "Checks failed");
+  if (pr.reviewDecision === "CHANGES_REQUESTED") return open(colors.ansi3, "Changes requested");
+  // CLEAN is GitHub's own "mergeable now": an empty decision means no review is required.
+  if (pr.mergeStateStatus === "CLEAN" && (pr.reviewDecision === "APPROVED" || !pr.reviewDecision))
+    return open(colors.ansi2, "Ready to merge", true);
+  return open(colors.ansi2, "Open");
 }
 
 /** Only github.com remotes are supported. Never pass an arbitrary remote URL to gh. */
@@ -322,6 +325,8 @@ export class PRStatusObserver {
     const key = JSON.stringify(args);
     const cached = this.cache.get(key);
     if (cached && Date.now() - cached.at < maxAge) return cached.data;
+    // Stamp when the call started, like the poll does, so the next poll never lands on this entry.
+    const at = Date.now();
     // Herdr's exec takes a command name and an argument array (no shell), so the
     // arguments can never form a command line; failures say why once.
     const result = await exec("gh", args).catch((e) => {
@@ -333,7 +338,8 @@ export class PRStatusObserver {
       throw new Error((result.stderr || "GitHub unavailable; check gh auth login").trim());
     }
     const data = JSON.parse(result.stdout);
-    this.cache.set(key, { at: Date.now(), data });
+    // Stamp when the call started, like the poll does, so the next poll never lands on this entry.
+    this.cache.set(key, { at, data });
     return data;
   }
 }

@@ -21,11 +21,13 @@ import {
   home,
   exec,
   focused,
+  checking,
 } from "herdr";
 import { PRStatusObserver, prPlaceKey, prAppearance } from "../git/pr-status.js";
 import { spaceFolder, checkoutKey, readCheckout } from "../git/checkouts.js";
 import { findRepoIcon, pickedIcon } from "../git/project-icons.js";
 import { loadSettings, duration } from "../settings.js";
+import { DEFAULT_SETTINGS } from "../defaults.js";
 import { findNode } from "./find-node.js";
 import { TEXT, Icon, IconButton, Badge } from "./ui.js";
 import { HOVER_KEY, LIVE_KEY } from "./card.js";
@@ -49,8 +51,9 @@ const rowHeight = ({ tree }) => (tree ? 28 : 30);
 // Watches and terminal events handle most changes. Poll visible repositories
 // occasionally to catch edits and commits made outside Herdr.
 const GIT_FALLBACK_MS = 15000;
-// Preferences a person may change in the installed mod.json under `settings`.
-const DEFAULT_SETTINGS = { git: { retry_after: "15s" }, pull_request_status: true };
+// Places looked at together. All at once, a few hundred spaces run out of the
+// app's open files, or past a machine core's 16 running execs.
+const AT_ONCE = 6;
 
 // What a stored color name looks like on an avatar (the same in every mod
 // that draws space avatars): one strong color per hue, light and dark alike.
@@ -92,7 +95,7 @@ export class Spaces {
     this.busy = {}; // pane -> an agent working or a program in front of its shell
     this.ready = {}; // machine -> its layout was readable at the last look
     this.at = {}; // Space ID -> checkout key at the previous refresh.
-    this.watching = new Set(); // local repos' git folders
+    this.watching = new Map(); // local repos' pending folder watches
     // Spaces made while this runs wait (at most a moment) for their git, so a
     // worktree appears under its repo instead of jumping there.
     this.shown = new Set(spaces().map((s) => s.id));
@@ -134,10 +137,13 @@ export class Spaces {
     }
     this.folded = new Set();
     try {
-      this.folded = new Set(JSON.parse(localStorage.getItem("machines.folded") ?? "[]"));
+      const saved = JSON.parse(localStorage.getItem("machines.folded") ?? "[]");
+      this.folded = new Set(Array.isArray(saved) ? saved : []);
     } catch {
       /* Ignore invalid saved UI state. */
     }
+    // A check loads the mod once and nothing more: no helpers, no timers, no Git.
+    if (checking()) return;
     // "oh-my-sidebar.new-group" in keys.json asks for a new folder's name.
     cx.spawn(async () => {
       for (;;) if ((await nextCommand()) === "new-group") openNameDialog(null, this.focusedMachine());
@@ -198,6 +204,14 @@ export class Spaces {
     const places = Object.create(null);
     for (const space of spaceList) places[space.id] = checkoutKey(space, paneList);
     const used = new Set(Object.values(places).filter((key) => JSON.parse(key)[1]));
+    // Places that are gone: their Git answers go too, so a folder visited
+    // again is read fresh.
+    for (const key of Object.keys(this.git)) {
+      if (used.has(key)) continue;
+      delete this.git[key];
+      delete this.checked[key];
+      this.unsure.delete(key);
+    }
     const due = new Set([...used].filter((key) => !(key in this.git)));
 
     this.addChangedBranches(due, now, spaceList, paneList, places);
@@ -300,19 +314,34 @@ export class Spaces {
       while (this.pending.size) {
         const keys = [...this.pending];
         this.pending.clear();
-        for (const key of keys) await this.check(key, cx);
+        let next = 0;
+        await Promise.all(
+          Array.from({ length: Math.min(AT_ONCE, keys.length) }, async () => {
+            while (next < keys.length) await this.check(keys[next++], cx);
+          }),
+        );
       }
-      const used = new Set(
-        Object.values(this.git)
-          .filter(Boolean)
-          .map((g) => JSON.parse(g.repo))
-          .filter(([on]) => !on)
-          .map(([, repo]) => repo),
-      );
-      for (const repo of this.watching) if (!used.has(repo)) this.watching.delete(repo);
+      this.dropUnused();
       this.refreshing = false;
       cx.notify();
     });
+  }
+
+  // Repos that are gone: their watches go with them, so they don't take up
+  // room among the folders Herdr watches at once.
+  dropUnused() {
+    const used = new Set(
+      Object.values(this.git)
+        .filter(Boolean)
+        .map((g) => JSON.parse(g.repo))
+        .filter(([on]) => !on)
+        .map(([, repo]) => repo),
+    );
+    for (const [repo, pending] of this.watching) {
+      if (used.has(repo)) continue;
+      pending.cancel?.();
+      this.watching.delete(repo);
+    }
   }
 
   // ── Read-only Git metadata and local watches ──────────────────────────────
@@ -334,21 +363,27 @@ export class Spaces {
 
   watch(repo, cx) {
     if (this.watching.has(repo)) return;
-    this.watching.add(repo);
+    // The watch is kept, so it can be stopped when the repo goes away: Herdr
+    // watches at most 64 folders at once, and every caller takes a slot.
+    const pending = watchFolder(repo);
+    this.watching.set(repo, pending);
     cx.spawn(async (cx) => {
+      let current = pending;
       try {
-        while (this.watching.has(repo)) {
-          await watchFolder(repo);
+        for (;;) {
+          await current;
+          if (this.watching.get(repo) !== current) return;
           const mine = JSON.stringify([null, repo]);
-          if (this.watching.has(repo))
-            this.refreshGit(
-              Object.keys(this.git).filter((k) => this.git[k]?.repo === mine),
-              cx,
-            );
+          const keys = Object.keys(this.git).filter((k) => this.git[k]?.repo === mine);
+          if (!keys.length) break;
+          this.refreshGit(keys, cx);
+          current = watchFolder(repo);
+          this.watching.set(repo, current);
         }
       } catch {
-        this.watching.delete(repo);
+        /* The folder can't be watched: the timer fallback carries on. */
       }
+      if (this.watching.get(repo) === current) this.watching.delete(repo);
     });
   }
 
@@ -992,7 +1027,7 @@ export class Spaces {
 
   // The issues mod's viewer for an issue or PR; Cmd/Ctrl-click opens GitHub instead.
   // Presses stop here: the row selects (and drags) on mouse-up.
-  linkBadge(id, w, { repo, number, pr, url, title, label, color, icon, compact }) {
+  linkBadge(id, w, { repo, number, pr, url, title, label, color, icon, compact, ready }) {
     const shortcut = window().platform === "macos" ? "Cmd" : "Ctrl";
     return h_flex()
       .id(id)
@@ -1015,7 +1050,7 @@ export class Spaces {
           repo, number, on: null, pr, folder: spaceFolder(w, panes()), machine: w.machine ?? null } } });
       })
       .child(Icon(icon).size(13).flex_none())
-      .when(!compact, (el) => el.child(div().text_size(TEXT.caption).child(`#${number}`)));
+      .when(!compact, (el) => el.child(div().text_size(TEXT.caption).child(ready ? `#${number} ✓` : `#${number}`)));
   }
 
   issueBadge(w, t) {
@@ -1036,7 +1071,7 @@ export class Spaces {
     for (const pr of prs.slice(0, 1)) {
       const status = prAppearance(pr, t);
       badge.child(this.linkBadge(`space-pr-${w.id}-${pr.repository}-${pr.number}`, w, {
-        repo: pr.repository, number: pr.number, pr: true, title: pr.title, label: status.label,
+        repo: pr.repository, number: pr.number, pr: true, title: pr.title, label: status.label, ready: status.ready,
         url: pr.url || `https://github.com/${pr.repository}/pull/${pr.number}`, color: status.color, icon: status.icon, compact,
       }));
     }

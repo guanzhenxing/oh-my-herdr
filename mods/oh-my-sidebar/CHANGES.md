@@ -56,3 +56,26 @@ Modified files:
 Added files: `views/card.js`, `views/groups.js`, `views/space-agents.js`, `views/space-nav.js`, `views/list-tabs.js`, `git/project-icons.js`, and icons
 (`bot`, `moon`, `copy`, `ellipsis`, `external`, `folder`, `folder-plus`, `github`, `issue`, `issue-closed`,
 `panel-bottom`, `plug`, `sliders`). Removed: `mod.schema.json`, `icons/sliders.svg`.
+
+## Ports from upstream Better Sidebar (munza/herdr-mods)
+
+- 3.3.0 (2026-11-23): the PR badge gains Conflicts (mergeStateStatus DIRTY), Changes
+  requested (reviewDecision) and Ready to merge (`#N ✓`, CLEAN with an approval or no
+  review rule); `gh pr list` asks for `reviewDecision,mergeStateStatus`; the gh cache is
+  stamped when the call starts, so a poll never lands on a fresh entry.
+- 3.7.0 (2026-11-23): an `agent_name` setting ("tab", the default, or "title") — "title"
+  names an agents-row by the terminal's live title, falling back to the name it would
+  otherwise carry. Our defaults move to `defaults.js`; the schema block lives in the
+  installed `mod.json` settings (we ship no mod.schema.json).
+- 3.10.0 (2026-11-23), the machinery only — the render parts of that port rewrite
+  upstream's own spaces view, which ours no longer resembles; they are skipped:
+  - `git/checkouts.js` taken whole from 3.10.0 (10s git timeouts, rev-parse /
+    symbolic-ref / rev-list instead of a worktree scan) with our multilingual
+    "not a git repository" regex re-applied on top.
+  - `views/spaces.js`: git checks run six places at once (AT_ONCE); a repo's folder
+    watch is kept as a cancellable pending and stopped with the repo (Herdr watches
+    at most 64 folders); git answers for places that are gone are dropped, so a
+    folder visited again reads fresh; a damaged `machines.folded` value no longer
+    stops the list; a check loads the mod without helpers, timers or Git (`checking()`).
+  - `views/agents.js`: `clean` keeps a leading bracket ("[web] login") and strips
+    Codex's "[ ! ] " mark, as Herdr's own panel does.
