@@ -7,7 +7,7 @@
 | 组件 | 来源 | 许可 | 使用方式 |
 | --- | --- | --- | --- |
 | oh-my-sidebar（Better Sidebar 3.0.0 基底） | [munza/herdr-mods](https://github.com/munza/herdr-mods)，© 2026 Tawsif Aqib | Apache-2.0 | `mods/oh-my-sidebar/`，深度修改，并挑选移植了上游 3.3.0 / 3.7.0 / 3.10.0 的部分修复：见其 `CHANGES.md`；`init` 里有 orca → oh-my-herdr 的一次性共享状态迁移 |
-| session-history | [itisvincent/herdr-session-history](https://github.com/itisvincent/herdr-session-history) | MIT | `mods/session-history/`，修改：见其 `CHANGES.md`（macOS 化动作、OMP/ZCode/Gemini 源路径修正、去掉面板收起按钮）；其 `icons/omp.svg` 取自 Herdr 自带图标（Apache-2.0）、`icons/zcode.svg` 来自本仓库 `mods/usage-limits/icons/` |
+| session-history | [itisvincent/herdr-session-history](https://github.com/itisvincent/herdr-session-history) | MIT | `mods/session-history/`，修改：见其 `CHANGES.md`（macOS 化动作、OMP/ZCode/Gemini 源路径修正、去掉面板收起按钮；Windows 分支与 `scan.ps1` 已删——本布局不跑 Windows）；其 `icons/omp.svg` 取自 Herdr 自带图标（Apache-2.0）、`icons/zcode.svg` 来自本仓库 `mods/usage-limits/icons/` |
 | herdr-automations | [DnzzL/herdr-automations](https://github.com/DnzzL/herdr-automations)，© 2026 Thomas Legrand | MIT | `mods/automations/` 是它的应用 mod（仅调整 `mod.json`）；其 Go CLI 收编在 `cli/herdr-automations/`，带两处原子写入补丁——见其 `VENDOR.md` |
 | Herdr Desktop 自带 mods | [herdrdev/herdr-app](https://github.com/herdrdev/herdr-app) | Apache-2.0 | `my-menu`、`my-new-menu`、`my-pane`、`my-status`、`my-tabs`、`my-worktree`、`files-open-with`、`file-icons` 分别是 Herdr 自带 `menu`、`new-menu`、`pane`、`workspace-status`、`tabs`、`worktree`、`files` 的修改副本；`issues`、`new-worktree` 与 Better Sidebar 的部分代码和图标也取自它 |
 

@@ -145,3 +145,10 @@ oh-my-pi 等），`omp` 经 `NAME_ALIASES` 别名到 `oh-my-pi`（名称与图�
 - 移交 brief 不含 git 状态（agent-handoff 的对话框含）；新代理自行 git status。
 - 通用 CATALOG 的 antigravity 源（`~/.gemini/antigravity`）在本机扫出 72 条噪音，
   但不在面板的 AGENTS 列表里，永不显示；仅为与上游目录保持一致而保留。
+
+## Windows 分支移除（2026-11-23）
+
+本布局只跑 macOS（Linux 次之），Windows 从未验证过。砍掉：`scan.ps1` 与扫描器的
+PowerShell 分发（现在无条件走 `scan.sh`）、copy/reveal/remove/openDir 四个函数的
+explorer/powershell 分支。macOS 直呼、Linux 的 xdg-open/xclip/wl-copy 回退不变。
+上文「scan.ps1 保留上游原样」的记录就此作废。

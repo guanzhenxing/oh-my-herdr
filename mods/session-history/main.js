@@ -76,23 +76,17 @@ function activeFolder() {
   return s?.folder || null;
 }
 
-// oh-my-herdr is macOS-first; Windows keeps its PowerShell paths, Linux falls
-// back to xdg-open / xclip / wl-copy where they exist.
+// oh-my-herdr is macOS-first; Linux falls back to xdg-open / xclip / wl-copy
+// where they exist.
 const PLATFORM = () => window()?.platform || "macos";
 const shq = (s) => `'${String(s).replace(/'/g, `'\\''`)}'`;
 
 function copyText(text) {
   const t = String(text);
-  if (PLATFORM() === "windows") {
-    return exec("powershell", ["-NoProfile", "-Command", `Set-Clipboard -Value '${t.replace(/['\u2018-\u201B]/g, "$&$&")}'`]).catch(() => {});
-  }
   return exec("bash", ["-c", `printf %s ${shq(t)} | pbcopy 2>/dev/null || printf %s ${shq(t)} | xclip -selection clipboard 2>/dev/null || printf %s ${shq(t)} | wl-copy 2>/dev/null`]).catch(() => {});
 }
 
 function revealPath(p) {
-  if (PLATFORM() === "windows") {
-    return exec("powershell", ["-NoProfile", "-Command", `Start-Process explorer.exe -ArgumentList '/select,"${String(p).replace(/['\u2018-\u201B]/g, "$&$&")}"'`]).catch(() => {});
-  }
   if (PLATFORM() === "macos") {
     return exec("open", ["-R", String(p)]).catch(() => {});
   }
@@ -101,18 +95,11 @@ function revealPath(p) {
 }
 
 function removePath(p) {
-  if (PLATFORM() === "windows") {
-    return exec("powershell", ["-NoProfile", "-Command", `Remove-Item -LiteralPath '${String(p).replace(/'/g, "''")}' -Force -Recurse -ErrorAction SilentlyContinue`]).catch(() => {});
-  }
   return exec("rm", ["-rf", String(p)]).catch(() => {});
 }
 
 function openDir(p) {
   if (!p) return;
-  if (PLATFORM() === "windows") {
-    exec("powershell", ["-NoProfile", "-Command", `Start-Process explorer.exe '${String(p).replace(/'/g, "''")}'`]).catch(() => {});
-    return;
-  }
   if (PLATFORM() === "macos") {
     exec("open", [String(p)]).catch(() => {});
     return;
@@ -314,24 +301,13 @@ export default class SessionHistory extends View {
     this.loading = true;
     this.error = null;
     cx.notify();
-    const platform = window()?.platform;
     try {
-      let r;
-      if (platform === "windows") {
-        r = await exec("powershell", [
-          "-NoProfile",
-          "-ExecutionPolicy", "Bypass",
-          "-File", `${appHome()}/mods/session-history/scan.ps1`,
-          "-Limit", "120",
-        ]);
-      } else {
-        r = await exec("bash", [
-          `${appHome()}/mods/session-history/scan.sh`,
-          "--limit", "4000",
-          "--cache", `${appHome()}/data/session-history/index.json`,
-          "--budget-ms", "8000",
-        ], { timeout: 60000 });
-      }
+      const r = await exec("bash", [
+        `${appHome()}/mods/session-history/scan.sh`,
+        "--limit", "4000",
+        "--cache", `${appHome()}/data/session-history/index.json`,
+        "--budget-ms", "8000",
+      ], { timeout: 60000 });
       if (token !== this.token) return;
       if (r.code !== 0) {
         const raw = (r.stderr || r.stdout || `scan exited ${r.code}`).trim().slice(0, 240);
