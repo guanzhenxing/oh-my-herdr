@@ -20,6 +20,12 @@ const PRESETS = [
 const AGENTS = ["claude", "codex", "pi", "copilot"];
 const WORKSPACES = [["worktree", "New worktree"], ["root", "Repo root"], ["existing", "Existing space"]];
 const FINISHED = new Set(["done", "failed", "cancelled"]);
+// The herdr API names no platform; a Windows home starts with a drive letter.
+const windows = () => /^[A-Za-z]:[\\/]/.test(home());
+const WINDOWS_MAX_COMMAND_LINE = 32767; // characters, the terminating NUL included
+// Upper bound of the Windows command line exec builds from argv: each argument
+// quoted, each " or \ possibly escaped by a backslash, a space between.
+const commandLineLength = (argv) => argv.reduce((n, a) => n + a.length + (a.match(/["\\]/g)?.length ?? 0) + 3, 0);
 
 const human = (cron) => PRESETS.find(([, c]) => c === cron)?.[0] ?? cron;
 const tilde = (p) => (p && p.startsWith(home()) ? "~" + p.slice(home().length) : p ?? "");
@@ -60,10 +66,13 @@ export default class Automations extends View {
     cx.timer.every(30000, (cx) => this.refresh(cx)); // next-run times and the scheduler's pid
   }
 
-  // The CLI on PATH, else where install.sh and the dev symlink put it.
+  // The CLI on PATH, else where this platform's installer puts it: install.ps1
+  // on Windows, install.sh and the dev symlink elsewhere. %LOCALAPPDATA% is
+  // assumed at its default: the herdr API exposes no environment.
   async locate() {
     try { if ((await exec("herdr-automations", ["version"])).code === 0) return "herdr-automations"; } catch {}
-    return `${home()}/.local/bin/herdr-automations`;
+    return windows() ? `${home()}\\AppData\\Local\\Programs\\herdr-automations\\herdr-automations.exe`
+      : `${home()}/.local/bin/herdr-automations`;
   }
 
   async cli(args) {
@@ -163,6 +172,7 @@ export default class Automations extends View {
     };
     this.form = {
       original, workspace: a.workspace ?? "worktree", workspace_id: a.workspace_id ?? "",
+      close: a.close_workspace === "on-success" && a.workspace !== "existing",
       agent: a.template ? "" : a.agent ?? "claude", template: a.template ?? "",
       name: field(a.name, "issue-triage"), cron: field(a.cron, "0 9 * * 1-5"), repo: field(tilde(a.repo), "~/Projects/myapp"),
       model: field(a.model, "agent default"), timeout: field(String(a.timeout_minutes ?? 60), "60"),
@@ -187,15 +197,21 @@ export default class Automations extends View {
     return {
       name: f.name.value().trim(), cron: f.cron.value().trim(), repo: expand(f.repo.value().trim()),
       workspace: f.workspace, workspace_id: f.workspace === "existing" ? f.workspace_id : "",
+      close_workspace: f.close && f.workspace !== "existing" ? "on-success" : "never",
       agent: f.template ? "" : f.agent, template: f.template, model: f.template ? "" : f.model.value().trim(),
       prompt: f.prompt.value(), mcp_config: expand(f.mcp.value().trim()), timeout_minutes: Number.isFinite(num) ? num : 0,
     };
   }
 
   async put(dryRun) {
-    const f = this.form, args = ["put", ...(f.original ? ["--original", f.original] : []), ...(dryRun ? ["--dry-run"] : [])];
-    // exec has no stdin: hand the JSON over through the shell.
-    const r = await exec("sh", ["-c", 'bin=$1 json=$2; shift 2; printf %s "$json" | "$bin" "$@"', "sh", this.bin, JSON.stringify(this.entry()), ...args]);
+    const f = this.form, args = ["put", ...(f.original ? ["--original", f.original] : []), ...(dryRun ? ["--dry-run"] : []),
+      "--entry", JSON.stringify(this.entry())]; // exec has no stdin
+    // Windows refuses a longer command line before the CLI starts, with a bare
+    // "filename too long": say why here. Never cut the prompt to fit.
+    const size = commandLineLength([this.bin, ...args]);
+    if (windows() && size >= WINDOWS_MAX_COMMAND_LINE)
+      throw new Error(`Too long for Windows: ${size} characters on the command line, the limit is ${WINDOWS_MAX_COMMAND_LINE - 1}. Shorten the prompt.`);
+    const r = await exec(this.bin, args);
     if (r.code !== 0) throw new Error((r.stderr || r.stdout).trim());
     return JSON.parse(r.stdout);
   }
@@ -350,6 +366,7 @@ export default class Automations extends View {
         .child(kv("Next", a.disabled ? "paused" : this.list.paused ? "held: all paused" : until(a.next)))
         .child(kv("Repo", tilde(a.repo)))
         .child(kv("Runs in", WORKSPACES.find(([w]) => w === a.workspace)?.[1] ?? a.workspace))
+        .child(kv("Closes", a.close_workspace === "on-success" ? "after a successful run" : "stays open"))
         .child(kv(a.template ? "Template" : "Agent", a.template || `${a.agent}${a.model ? " · " + a.model : ""}`)))
       .child(div().p(8).rounded(7).bg(t.raised).text_size(12).text_color(t.muted).child(a.prompt || a.workflow || ""))
       .child(div().pt(4).text_size(11).font_semibold().text_color(t.dim).child("HISTORY"))
@@ -385,10 +402,13 @@ export default class Automations extends View {
           if (dir) { f.repo.set_value(tilde(dir)); this.preview(cx); }
           cx.notify();
         }), { h: 30 })))
-      .child(label("RUNS IN")).child(this.pills("f-ws", WORKSPACES, f.workspace, t, (v, cx) => { f.workspace = v; this.preview(cx); cx.notify(); }))
+      .child(label("RUNS IN")).child(this.pills("f-ws", WORKSPACES, f.workspace, t, (v, cx) => { f.workspace = v; if (v === "existing") f.close = false; this.preview(cx); cx.notify(); }))
       .when(f.workspace === "existing", (el) => el.child(this.pills("f-space",
         spaces().filter((s) => !s.machine).map((s) => [s.id, s.name]), f.workspace_id, t,
         (v, cx) => { f.workspace_id = v; this.preview(cx); cx.notify(); })))
+      .child(label("CLOSE WORKSPACE")).child(h_flex().gap(8).items_center().when(f.workspace === "existing", (el) => el.opacity(0.5))
+        .child(this.switch_("f-close", f.close, t, (cx) => { if (f.workspace === "existing") return; f.close = !f.close; this.preview(cx); cx.notify(); }))
+        .child(div().text_size(12).text_color(t.muted).child(f.workspace === "existing" ? "Not with a shared space" : "Close after a successful run")))
       .child(label("AGENT")).child(this.pills("f-agent", agents, agentValue, t, (v, cx) => {
         if (v.startsWith("template:")) { f.template = v.slice(9); f.agent = ""; } else { f.template = ""; f.agent = v; }
         this.preview(cx); cx.notify();

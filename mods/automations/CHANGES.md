@@ -1,8 +1,9 @@
 # Changes
 
 This mod is the app mod shipped with [DnzzL/herdr-automations](https://github.com/DnzzL/herdr-automations)
-(MIT, see `THIRD_PARTY.md` at the repository root); only `mod.json` was adapted (dialog placement and
-title). Its CLI is vendored in `cli/herdr-automations/` at the repository root.
+(MIT, see `THIRD_PARTY.md` at the repository root); `mod.json` was adapted (dialog placement and
+title), and `main.js` carries the two local patches listed below. Its CLI is vendored in
+`cli/herdr-automations/` at the repository root.
 
 - 2026-11-14: config/state folder watchers no longer die on their first failure — a
   failed watch backs off (1s doubling to 60s) and retries, and watchers re-arm from

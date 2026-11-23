@@ -16,9 +16,12 @@ herdr-core and keeps the files. Install it first, or the panel shows an error:
 ```bash
 git clone https://github.com/DnzzL/herdr-automations && cd herdr-automations
 sh scripts/install.sh                               # prebuilt binary into bin/
-ln -s "$PWD/bin/herdr-automations" ~/.local/bin/    # where the panel looks
+ln -s "$PWD/bin/herdr-automations" ~/.local/bin/    # where the panel looks off PATH
 herdr-automations service install                   # the scheduler, at login and now
 ```
+
+On Windows, the PowerShell one-liner in the README's "Windows (community)" section
+installs it instead, then `herdr-automations service install`.
 
 Then put `backend: hc` at the top of the file `herdr-automations list` names, so
 runs open in the app. The mod **runs programs**: `herdr-automations` (every read
@@ -47,13 +50,14 @@ top to bottom:
     load follow on an `ansi1` 9% tint with their message.
   - **Detail.** Dot and name (15px semibold); buttons `Run now` (solid), `Pause` /
     `Resume`, `Edit`, `Delete` (`ansi1` text). Key–value rows (78px `dim` keys):
-    Schedule, Next, Repo, Runs in, Agent. The prompt on a `raised` block. `HISTORY`:
+    Schedule, Next, Repo, Runs in, Closes, Agent. The prompt on a `raised` block. `HISTORY`:
     status (66px, colored), error or duration, "3h ago".
   - **Form.** "New automation" or "Edit <name>". Fields, each under an 11px label:
     NAME; SCHEDULE as pills (Hourly, Every morning, Weekdays 9:00, Mondays 9:00,
     Fridays 17:00, Custom) over a cron input; REPO with `Choose…`; RUNS IN as pills
     (New worktree, Repo root, Existing space, the last opening a pill per local
-    space); AGENT as pills (claude, codex, pi, copilot, then each hc template); MODEL (hidden
+    space); CLOSE WORKSPACE as a switch (on writes `close_workspace: on-success`, off
+    `never`; greyed and forced off for Existing space); AGENT as pills (claude, codex, pi, copilot, then each hc template); MODEL (hidden
     for a template); PROMPT (textarea, 4–12 rows); TIMEOUT (MINUTES); MCP CONFIG.
     Below: "Next: in 3h, Mon 09:00, Tue 09:00" in `muted`, or the problem in `ansi1`.
     `Cancel`, `Save` (solid) at the right.
@@ -94,8 +98,8 @@ top to bottom:
 - `herdr`: `exec`, `hc`, `home`, `theme`, `terminals`, `spaces`, `run`
   (`pane.focus`), `notify`, `pickFolder`, `watchFolder`. `gpui-base`: `InputState`,
   `Input`, `TextareaState`, `Textarea`, `v_flex`, `h_flex`.
-- The CLI it calls: `ls --json`, `history --json`, `put [--original n] [--dry-run]`
-  (JSON on stdin), `rm`, `seen <id>|--all`, `run <name> --bg`,
+- The CLI it calls: `ls --json`, `history --json`, `put [--original n] [--dry-run]
+  --entry <json>`, `rm`, `seen <id>|--all`, `run <name> --bg`,
   `pause|resume <name>|--all`, `service install`.
 
 ## Watch out
@@ -107,8 +111,11 @@ top to bottom:
 - **`shared("workspace.panels")` is not re-read from `shared.json`** when the file is
   edited by hand; a panel missing from it is closed by the tab bar on every space
   switch. Add `automations` in the clone's code instead.
-- **`exec` has no stdin.** `put` gets its JSON through
-  `sh -c 'printf %s "$json" | "$bin" put …'`.
+- **`exec` has no stdin.** `put` gets its JSON as `--entry <json>`, never through `sh`,
+  which Windows lacks. Windows caps a command line at 32,767 characters: the panel
+  refuses a longer entry with a message rather than let it fail or be cut.
+- **The API names no platform or environment.** Windows is told by a drive letter in
+  `home()`, and `%LOCALAPPDATA%` is taken to be `home()\AppData\Local`.
 - **`exec` stops at 30s.** Never call `run <name>` without `--bg`.
 - **Symlinked mod folders are not reloaded** on change; copy the files.
 - **`toLocaleDateString` options are ignored** by the runtime: spell weekdays out.

@@ -367,7 +367,7 @@ if command -v herdr-automations >/dev/null 2>&1 || [ -x "$HOME/.local/bin/herdr-
   echo "herdr-automations CLI: already installed"
 else
   cli_bin="$HOME/.local/bin/herdr-automations"
-  tag="v0.12.1"
+  tag="v0.14.0"
   if command -v go >/dev/null 2>&1; then
     echo "herdr-automations CLI: building from vendored source (cli/herdr-automations)"
     (cd cli/herdr-automations && go build -o "$cli_bin" .) || echo "  go build failed — the Automations panel will say so until it is installed."

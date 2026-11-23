@@ -2,6 +2,36 @@
 
 What changed for someone using the plugin. Dates are release dates.
 
+## v0.14.0 — 2026-11-21
+
+### Added
+
+- The desktop panel's form has a "Close workspace" switch for `close_workspace`,
+  and `list --json` / `put` carry it, so saving in the panel keeps the value (#27).
+
+## v0.13.0 — 2026-11-21
+
+### Added
+
+- `gate:` runs a command in the repo before a run starts. Exit 75 skips the run
+  (recorded `skipped`, no workspace, no toast); any other failure fails it (#24).
+- Windows support, as the desktop app's backend: one PowerShell command
+  installs or updates it, `service install` starts the scheduler at login, and
+  the panel works as on macOS and Linux. Runs always go through hc there; a
+  `backend: herdr` line is reported. Community-supported: built and tested in CI,
+  and checked on Windows 10 by @3leg0ocat. Thanks @HatlerRyan for asking and
+  for the prototype, and @3leg0ocat for testing it (#21).
+- The panel saves automations through the new `put --entry`, without `sh`. On
+  Windows, a prompt too long for the command line fails with a message instead
+  of being cut.
+
+### Fixed
+
+- `service install` no longer mistakes a `herdr-automations` binary on PATH
+  for the CLI shim, so it registers the exe you ran (#21).
+- `install-cli` refuses to overwrite a `herdr-automations` binary in its target
+  directory instead of replacing it with the shim.
+
 ## v0.12.1 — 2026-11-04
 
 - Copilot receives `mcp_config` through `--additional-mcp-config @<path>`,

@@ -1,6 +1,6 @@
 # Vendored: herdr-automations
 
-Upstream: <https://github.com/DnzzL/herdr-automations>, tag **v0.12.1** (commit `900b4f2`),
+Upstream: <https://github.com/DnzzL/herdr-automations>, tag **v0.14.0** (commit `05e4629`),
 MIT — © 2026 Thomas Legrand, its `LICENSE` is kept here. Pristine copy minus `.git`
 (README, CHANGELOG, docs/ADR, skills and scripts included as shipped), with **two local
 patches**:
