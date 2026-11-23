@@ -11,6 +11,7 @@
   "layout:oh-my-herdr": {
     "cmd-shift-a": "oh-my-sidebar.toggle-list",
     "cmd-shift-b": "oh-my-sidebar.toggle-panel",
+    "cmd-alt-p": "mod.open:better-search",
     "cmd-shift-h": { "command": "tab.new", "args": { "name": "Sessions", "mod": "session-history" } },
     "cmd-alt-]": "oh-my-sidebar.next-space",
     "cmd-alt-[": "oh-my-sidebar.prev-space",

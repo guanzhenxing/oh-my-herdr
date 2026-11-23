@@ -83,6 +83,11 @@
   `hibernate`（`core.js` 快照/停止/启动、`ui.js` 对话框、与
   `oh-my-sidebar` 共享的 `settings.js`）、`resources`（`measure.js`）、
   `new-project`、`open-vscode`、`excalidraw`、
+  `better-search`（收编自 munza/herdr-mods，零改动：⌘⌥P 弹出全局搜索——任何机器上的
+  tab、agent、space、文件、Herdr 命令；`@` agent、`>` 命令、`/` 文件、`~` space、
+  `?` agent 输出、`#` PR、`$` issue 前缀过滤；Shift+Enter 预览，Cmd+Enter 发消息或
+  移交文件；上次所在 tab 标记 "last"，再按一次回到它。`place: none`，不进 layout，
+  `mod.open:better-search` 打开）、
   `session-history`（收编自 itisvincent/herdr-session-history，有修改：见其 `CHANGES.md`；
   代理会话历史面板，持久增量索引并扫描 Claude/Codex/Pi/OMP/Gemini/OpenCode/ZCode 等
   本机 transcript 存储：工作区/项目/全部三档视图、每源进度条、搜索、按 space 过滤、

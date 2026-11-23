@@ -1,6 +1,6 @@
 # oh-my-herdr
 
-一个 Herdr Desktop 布局，参照 Orca 应用设计：项目侧栏内嵌 worktree，并挂各自的 issue/PR 徽章；每个条目下方直接列出它的 agent 和子代理；space 可以休眠、重启后恢复 agent；带资源占用表、每个 worktree 的悬停卡片、应用内的 GitHub issues 和 pull requests、Create worktree 对话框（可从分支、issue、PR 或新名字创建）、Files 与 Git changes 面板、用量窗口、实时端口，以及参照 Orca「代理会话历史」的会话历史面板（扫描 Claude、Codex、Pi、OMP、Gemini、OpenCode、ZCode 等本机 transcript 存储，可搜索、过滤、一键恢复、在工作树中恢复、移交给另一个代理、打开日志查看器；侧栏 Sessions 入口或 cmd-shift-h 打开）。
+一个 Herdr Desktop 布局，参照 Orca 应用设计：项目侧栏内嵌 worktree，并挂各自的 issue/PR 徽章；每个条目下方直接列出它的 agent 和子代理；space 可以休眠、重启后恢复 agent；带资源占用表、每个 worktree 的悬停卡片、应用内的 GitHub issues 和 pull requests、Create worktree 对话框（可从分支、issue、PR 或新名字创建）、Files 与 Git changes 面板、全局搜索（⌘⌥P：任何机器上的 tab、agent、space、文件、Herdr 命令，`/` 前缀搜文件、`?` 搜 agent 输出、Cmd+Enter 直接给 agent 发消息或移交文件）、用量窗口、实时端口，以及参照 Orca「代理会话历史」的会话历史面板（扫描 Claude、Codex、Pi、OMP、Gemini、OpenCode、ZCode 等本机 transcript 存储，可搜索、过滤、一键恢复、在工作树中恢复、移交给另一个代理、打开日志查看器；侧栏 Sessions 入口或 cmd-shift-h 打开）。
 
 ![oh-my-herdr](preview.png)
 
@@ -15,7 +15,7 @@
 
 > Read ~/.config/herdr-app/AGENTS.md, then add this layout: https://github.com/guanzhenxing/oh-my-herdr
 
-布局还用到 [munza](https://github.com/munza/herdr-mods) 的两个 mod，已收编在本仓库（`mods/better-changes/`、`mods/better-config/`）——无需手动添加。
+布局还用到 [munza](https://github.com/munza/herdr-mods) 的三个 mod，已收编在本仓库（`mods/better-changes/`、`mods/better-config/`、`mods/better-search/`）——无需手动添加。
 
 或者，从本仓库的克隆里一条命令完成：`sh install.sh`（`--yes` 会覆盖已有的 mods 和布局——加上 `--with-skills` 时还会替换不一致的 skill 副本，并**删除下方链接位置里用户自装的 `herdr-cowork` 目录**；`--dry-run` 可先预览）。它会合并 `keys.json`——你已占用的按键保留原有动作——并把 Herdr 自带的默认键补回来（见下方守卫说明；`keys.json` 被 `cp` 覆盖或在 app 首次运行前装入局部文件会静默丢掉全部默认键，含 `cmd-v` 粘贴；补齐时会打印 `restored N Herdr default binding(s)`）。它按 `mod.schema.json` 的描述保留 Mod 设置，对安装的每个 mod 跑 `herdr-app check`，且从不碰它不随包发布的 mod。日常部署改动时请勿 `cp` 仓库的 keys.json 直盖 `~/.config/herdr-app/keys.json`，只用本脚本或手动 merge。
 
@@ -72,7 +72,7 @@ agent skill（收编在 `skills/`，可选）。SKILL.md 会装到 `~/.agents/sk
 ## 更新本仓库
 
 `./sync.sh` 把布局和这些 mods 从你的 Herdr home 拷回仓库。
-收编的 better-changes 和 better-config 手动跟随 [munza/herdr-mods](https://github.com/munza/herdr-mods)：
+收编的 better-changes、better-config 和 better-search 手动跟随 [munza/herdr-mods](https://github.com/munza/herdr-mods)：
 在应用里从它的仓库重新添加 mod（或把新文件拷进你的 Herdr home），在 `mod.json` 里把 Better Changes 的 `"place"` 改回 `"none"`，跑 `./sync.sh` 并提交；
 已安装用户用 `sh install.sh --yes` 升级。
 收编的 skill 手动刷新：抓取 gist，把 frontmatter 的 `name` 改成
