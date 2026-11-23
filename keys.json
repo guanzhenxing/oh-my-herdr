@@ -1,13 +1,10 @@
 {
   "global": {
     "cmd-g": "mod.open:open-vscode",
-    "cmd-shift-e": "mod.open:excalidraw",
     "cmd-shift-n": "mod.open:new-project",
     "cmd-alt-n": "mod.open:new-worktree"
   },
-  "terminal": {
-    "cmd-shift-e": "mod.open:excalidraw"
-  },
+  "terminal": {},
   "layout:oh-my-herdr": {
     "cmd-shift-a": "oh-my-sidebar.toggle-list",
     "cmd-shift-b": "oh-my-sidebar.toggle-panel",

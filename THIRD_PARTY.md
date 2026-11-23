@@ -19,7 +19,6 @@
 | Better Config 0.4.0 | [munza/herdr-mods](https://github.com/munza/herdr-mods)，© 2026 Tawsif Aqib | Apache-2.0 | `mods/better-config/`，零改动 |
 | Better Search 0.1.0 | [munza/herdr-mods](https://github.com/munza/herdr-mods)，© 2026 Tawsif Aqib | Apache-2.0 | `mods/better-search/`，零改动；⌘⌥P 打开（`keys.json` 的 `layout:oh-my-herdr` 段绑 `mod.open:better-search`，只在本布局生效） |
 | Image Viewer | [dougcunha/herdr-mods](https://github.com/dougcunha/herdr-mods)，© 2026 Douglas Cunha | MIT | `mods/image-viewer/`，带一处 PowerShell 弯引号转义补丁（见其 `CHANGES.md`）；`mods/files-open-with/` 对图片文件调用它（`mod` 菜单动作与 `tabs.js` 路由） |
-| Excalidraw | [excalidraw/excalidraw](https://github.com/excalidraw/excalidraw) | MIT | 打包在 `mods/excalidraw/`，声明见其 `LICENSE*` 文件 |
 | Material Icon Theme | [material-extensions/vscode-material-icon-theme](https://github.com/material-extensions/vscode-material-icon-theme) | MIT | 图标在 `mods/file-icons/`，声明见 `LICENSE-material-icon-theme.txt` |
 | herdr-cowork skill | [ninehills 的 gist](https://gist.github.com/ninehills/eef70810238f779362a820786ae4a096)，© 2026 ninehills，v1.3.0 | 未声明 | `skills/herdr-cowork/SKILL.md`；frontmatter `name` 由 cowork 改为 herdr-cowork；其 `version:` 字段超出 Agent Skills 规范，原样保留 |
 

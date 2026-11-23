@@ -31,8 +31,7 @@ mods/image-viewer 是 dougcunha/herdr-mods 的 Image Viewer
 （https://github.com/dougcunha/herdr-mods），Copyright 2026 Douglas Cunha，MIT 许可，
 原样保留。mods/files-open-with 对图片文件打开它。
 
-mods/excalidraw 打包了 Excalidraw（MIT），mods/file-icons 打包了 Material Icon Theme
-（MIT）的图标；声明见各自文件夹。
+mods/file-icons 打包了 Material Icon Theme（MIT）的图标；声明见各自文件夹。
 
 skills/herdr-cowork/SKILL.md 来自 ninehills 的 gist（v1.3.0，
 https://gist.github.com/ninehills/eef70810238f779362a820786ae4a096）；上游未声明许可。

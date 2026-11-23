@@ -189,7 +189,7 @@ export default class Tabs extends View {
         .tooltip("Show sidebar")))
       // The + lives inside the scroll area, right after the last tab (browser-style).
       // Panel controls moved off this row: the right panel carries its own
-      // header now (mods/panel-head) — Files/Changes segment + Excalidraw + ✕;
+      // header now (mods/panel-head) — Files/Changes segment + ✕;
       // the row keeps only the 36px panel-toggle from the layout.
       .child(h_flex().id("tab-scroll").flex_1().min_w(0).h_full().items_center().gap(3).overflow_x_scrollbar()
         .children([...shown.map(item), button("tab-new", "+", () => openOverlay({ mod: "my-new-menu", kind: "popup", width: 250, height: 543 }))]))

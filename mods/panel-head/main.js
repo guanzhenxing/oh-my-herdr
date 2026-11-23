@@ -1,7 +1,7 @@
 // Panel head: Orca-style header for the right panel. The Files / Changes
-// segment switches the panel-body stack, the freedraw icon opens Excalidraw,
-// ✕ hides the panel. The tab bar's own copies of these buttons are gone —
-// panel controls live on the panel, like Orca's right pane header.
+// segment switches the panel-body stack, ✕ hides the panel. The tab bar's own
+// copies of these buttons are gone — panel controls live on the panel, like
+// Orca's right pane header.
 import { View, div, svg } from "gpui-kit";
 import { h_flex } from "gpui-base";
 import { theme, run, shared, layout } from "herdr";
@@ -78,24 +78,6 @@ export default class PanelHead extends View {
       .items_center()
       .children(PANELS.filter(([id]) => enabled.includes(id)).map(([id, label, icon]) => seg(id, label, icon)))
       .child(div().flex_1())
-      .child(
-        h_flex()
-          .id("ph-excalidraw")
-          .h(24)
-          .px(8)
-          .gap(5)
-          .flex_none()
-          .items_center()
-          .rounded(6)
-          .cursor_pointer()
-          .text_size(12)
-          .text_color(t.muted)
-          .hover((s) => s.bg(t.hover).text_color(t.foreground))
-          .tooltip("Open a drawing (⌘⇧E)")
-          .on_click(() => run("mod.open", { name: "excalidraw" }))
-          .child(svg("mods/excalidraw/icons/freedraw.svg").size(13))
-          .child("Excalidraw"),
-      )
       .child(iconBtn("ph-close", "mods/pane/close.svg", "收起面板 (⌘⇧B)", () => run("layout.hide", { id: "panel" })));
   }
 }
