@@ -40,8 +40,9 @@ function toggleSidebar() {
 }
 
 // Drops a status glyph, keeps a leading bracket or quote ("[web] login"), and
-// takes Codex's "[ ! ] " mark off, as Herdr's own panel does.
-const clean = (s) => (s ?? "").replace(/^[^\p{L}\p{N}\p{Ps}\p{Pi}]+/u, "").replace(/^\[ [!.] \] /, "").trim();
+// takes Codex's "[ ! ] " mark off, as Herdr's own panel does. An emoji a person
+// put there ("🔴 login") stays; known status marks (✋⏳) still go.
+const clean = (s) => (s ?? "").replace(/^(?:\[ [!.] \] |[✋⏳]\uFE0F?(?=\s)|(?!(?:\p{Emoji}\uFE0F|[#*]\u20E3))[^\p{L}\p{N}\p{Ps}\p{Pi}\p{Emoji_Presentation}])+/u, "").trim();
 
 export function lead(tab, all = panes()) {
   const mine = all.filter((p) => p.tab === tab.id && p.terminal);

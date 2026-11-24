@@ -11,8 +11,9 @@ function find(node, id) {
   return null;
 }
 
-// Same as the agents mod: drops a status glyph, keeps a leading bracket or quote.
-const clean = (s) => (s ?? "").replace(/^[^\p{L}\p{N}\p{Ps}\p{Pi}]+/u, "").replace(/^\[ [!.] \] /, "").trim();
+// Same as the agents mod: drops a status glyph, keeps a leading bracket or quote,
+// and an emoji a person put there ("🔴 login") — known status marks (✋⏳) still go.
+const clean = (s) => (s ?? "").replace(/^(?:\[ [!.] \] |[✋⏳]\uFE0F?(?=\s)|(?!(?:\p{Emoji}\uFE0F|[#*]\u20E3))[^\p{L}\p{N}\p{Ps}\p{Pi}\p{Emoji_Presentation}])+/u, "").trim();
 
 // A tab Herdr named (unnamed, or after its program) follows its agent's live
 // title, as the agents list does; a name the person gave stays.
