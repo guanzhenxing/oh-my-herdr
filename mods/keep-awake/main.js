@@ -6,6 +6,9 @@
 // exec caps at 10 minutes, which a -t claim never reaches).
 // Two views: the status-bar block (default) and a popup menu
 // (props { view: "menu" }) that switches the mode.
+// macOS only: caffeinate ships with it, nothing to install. window() is null until
+// Herdr's first frame and a copy's init runs before that, so the platform is read
+// where it is used, never once in init.
 import { View, div } from "gpui-kit";
 import { v_flex, h_flex } from "gpui-base";
 import { checking, props, shared, setShared, agents, exec as runProg, openOverlay, closeOverlay, theme, window } from "herdr";
@@ -18,14 +21,15 @@ const MODES = [
 ];
 const modeOf = (st) => MODES.find((m) => m.id === (st?.mode ?? "agents")) ?? MODES[1];
 
+// "macos" | "linux" | "windows" | undefined (no window yet: startup, herdr-app check).
+const platform = () => window()?.platform;
+
 export default class KeepAwake extends View {
   init(_props, cx) {
     this.dead = false;
     this.active = false; // a caffeinate claim is held right now
     if (checking()) return;
-    // macOS only: caffeinate ships with it, nothing to install.
-    if (window()?.platform !== "macos") { this.unsupported = true; return; }
-    if (props()?.view !== "menu") this.loop(cx);
+    if (props()?.view !== "menu") cx.spawn(async (cx) => { await this.loop(cx); }); // a task of its own: init's cx is not kept
   }
 
   async close(cx) {
@@ -49,8 +53,10 @@ export default class KeepAwake extends View {
       if (this.dead) return;
       const st = shared(KEY) ?? {};
       const mode = modeOf(st).id;
+      const os = platform();
+      if (os && os !== "macos") return; // settled on another system: nothing to claim, ever
       let claim = modeOf(st).claim;
-      if (mode === "agents" && !this.working()) claim = 0;
+      if (os !== "macos" || (mode === "agents" && !this.working())) claim = 0;
       this.active = claim > 0;
       if (this.active !== lastActive) {
         lastActive = this.active;
@@ -81,7 +87,7 @@ export default class KeepAwake extends View {
 
   // ---- status-bar block ----
   bar(t, cx) {
-    if (this.unsupported) return div().size(0);
+    if (platform() !== "macos") return div().size(0);
     const st = shared(KEY) ?? {};
     const mode = modeOf(st);
     const active = st.active === true || (this.active && st.active !== false);
