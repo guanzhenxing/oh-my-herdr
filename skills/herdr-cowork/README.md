@@ -12,7 +12,7 @@ cowork 是一套 Commander 调度协议，分成两部分：
 - **通用协议**：`PROTOCOL.md`。铁律、动作菜单、启动与等待、停靠报告。对每个团队都一样，随 oh-my-herdr 分发。
 - **团队包**：一个目录，里面是 `team.md`（角色与默认模型、命名前缀、工作区、路径）和 `templates/`（五个角色模板）。属于那个团队，不随 oh-my-herdr 分发（仓库里的示例包除外）。
 
-安装时两者拼成一份 SKILL.md，装成一个名为 `<团队名>-herdr-cowork` 的 agent skill。Commander 运行时只读这一个文件。
+安装时两者拼成一份 SKILL.md，装成一个 agent skill，名字就是团队包里写的那个，比如 `herdr-backend`。Commander 运行时只读这一个文件。
 
 它和 herdr-cowork skill 是两套独立的协议，一个会话里只用一套：那一套以 TEAM.md 为注册表，仓库里就是同目录的 `SKILL.md`，`--with-skills` 装它；这一套不用 TEAM.md。
 
@@ -70,7 +70,7 @@ cowork 是一套 Commander 调度协议，分成两部分：
 
 ### 安装
 
-仓库里带了一个示例团队包，可以直接装上试：`sh install.sh --with-cowork --team example`。它的工作区是示例值，正式用之前照"做一个团队包"做一个自己的。
+仓库里带了一个示例团队包，可以直接装上试：`sh install.sh --with-cowork --team example`，装出来的 skill 叫 `herdr-example`。它的工作区是示例值，正式用之前照"做一个团队包"做一个自己的。
 
 ```
 sh install.sh --with-cowork --team <团队名或团队包目录>
@@ -78,10 +78,12 @@ sh install.sh --with-cowork --team <团队名或团队包目录>
 
 `--team` 的值带斜杠时按路径处理：绝对路径原样使用，相对路径相对于你运行命令的目录。不带斜杠时按团队名处理，依次找 `~/.config/cowork/teams/<团队名>` 和仓库里的 `skills/herdr-cowork/teams/<团队名>`，本机的优先。不带 `--team` 只列出已知的团队包，不安装。
 
+skill 叫什么，由团队包 `team.md` 里的 `name` 决定，和 `--team` 给的目录名无关。一个名字在一台机器上只能装一份。
+
 装完之后：
 
 ```
-~/.agents/skills/<团队名>-herdr-cowork/
+~/.agents/skills/<skill 名>/
 ├── SKILL.md          通用协议 + 团队配置
 ├── README.md         本页
 ├── team.md           团队配置的副本
@@ -91,7 +93,7 @@ sh install.sh --with-cowork --team <团队名或团队包目录>
 
 另有一组 agent 软链，做法和 `--with-skills` 相同：Claude Code、Codex、Gemini、OpenCode、pi 各一条指向那个 skill 目录；home 目录不存在的 agent 被跳过并列出。加 `--yes` 时，这些位置上已有的真实目录或普通文件会被删掉再重建。hc 的模板目录 `~/.config/herdr-core/templates/` 不存在时（比如 hc 还没装），模板软链整体跳过并列出；建好这个目录后重跑一次。没有这些软链，Commander 起不了成员。以上用法在 hc 0.1.22 上验证过。
 
-`--dry-run` 只报告。已经装过时，和这次要写的内容一致就报 "up to date"；不一致时默认保留，加 `--yes` 才覆盖。覆盖只动上面四项，目录里的其他文件不删。团队包里已经没有的旧模板会删掉，连它在 hc 目录里的软链。指向别处的软链默认保留，加 `--yes` 才重建。报告写明 `--yes` 会删掉或替换什么，可以先 `--dry-run` 看。
+`--dry-run` 只报告。已经装过时，和这次要写的内容一致就报 "up to date"；不一致时默认保留，加 `--yes` 才覆盖。覆盖只动上面四项，目录里的其他文件不删。团队包里已经没有的旧模板会删掉，连它在 hc 目录里的软链。指向别处的软链默认保留，加 `--yes` 才重建。报告写明 `--yes` 会删掉或替换什么，可以先 `--dry-run` 看。目标位置上已经有一个不属于团队 skill 的目录时（里面没有 `team.md`），安装器拒绝安装，`--yes` 也不覆盖。
 
 hc 的模板目录里如果已经有同名的普通文件：内容和这次要链接到的那份模板一样，就换成软链（这一步不需要 `--yes`，内容不变）；不一样就保留并提示，`--yes` 也不动它。
 
@@ -100,11 +102,12 @@ hc 的模板目录里如果已经有同名的普通文件：内容和这次要�
 `--yes` 是整个安装器的参数：它同时覆盖有差异的 mod 和布局，和平常升级时一样。
 
 - 通用协议更新后，并且没有直接改过装好的文件：`sh install.sh --with-cowork --team <团队名> --yes`。
-- 直接改过装好的文件（包括对 Commander 说过"以后 X 都用 Y"）：升级时把 `--team` 指向 `~/.agents/skills/<团队名>-herdr-cowork`。装好的目录本身就是一个合法的团队包，这样新的通用协议和本机的改动都会保留。指向原来的团队包再加 `--yes`，会用旧值覆盖这些改动。同目录升级时更新的是 SKILL.md 和 README.md；`team.md` 和 `templates/` 是你的，不动。
+- 直接改过装好的文件（包括对 Commander 说过"以后 X 都用 Y"）：升级时把 `--team` 指向 `~/.agents/skills/<skill 名>`。装好的目录本身就是一个合法的团队包，这样新的通用协议和本机的改动都会保留。指向原来的团队包再加 `--yes`，会用旧值覆盖这些改动。同目录升级时更新的是 SKILL.md 和 README.md；`team.md` 和 `templates/` 是你的，不动。
+- 改 skill 的名字：改 `team.md` 里的 `name`，再装一次，会装出另一份 skill。旧的那份照"卸载"清掉；不清的话它还占着模板前缀，新的一份会被拒绝。
 
 ### 卸载
 
-先删软链，最后删目录，免得中间留下一批指向空目录的坏 skill：五处 agent 目录里的 `<团队名>-herdr-cowork` 软链；hc 模板目录里指向该目录的软链；然后是 `~/.agents/skills/<团队名>-herdr-cowork`。直接改过装好的文件的，那些改动只在那里，删之前先拷回团队包。
+先删软链，最后删目录，免得中间留下一批指向空目录的坏 skill：五处 agent 目录里的 `<skill 名>` 软链；hc 模板目录里指向该目录的软链；然后是 `~/.agents/skills/<skill 名>`。直接改过装好的文件的，那些改动只在那里，删之前先拷回团队包。
 
 ## 做一个团队包
 
@@ -115,7 +118,7 @@ hc 的模板目录里如果已经有同名的普通文件：内容和这次要�
    cp -R skills/herdr-cowork/teams/example ~/.config/cowork/teams/<名字>
    ```
 
-2. 改 `team.md`。开头两行是登记项：`team` 决定 skill 的名字，`prefix` 是模板名和成员名的前缀，都只用小写字母、数字和连字符。前缀在本机要唯一：hc 的模板目录是平的，两个团队共用一个前缀会争同一个模板名，安装器会拒绝后装的那个，并点名先装的团队。成员名最长 32 个字符（hc 的上限）。评审的名字最长，是 <前缀>-review-<短名>-<类型>-r<N>，前缀和短名的长度加起来不要超过 13。正文四个小节：角色与模板、命名前缀、工作区、路径。你的环境里有会把 Commander 带偏的具体规则时，再加第五小节"本机要留意的其他规则"，一条一行，比如"某仓的项目记忆里有'自审后再交'，这条对 Commander 不适用"。
+2. 改 `team.md`。开头两行是登记项。`name` 是装出来的 skill 的名字：只用小写字母、数字和连字符，不以连字符开头或结尾，最长 64 个字符，不能叫 `herdr-cowork`。建议按岗位起，比如 `herdr-backend`、`herdr-data`。`prefix` 是模板名和成员名的前缀，只用小写字母、数字和连字符。两个都在本机要唯一：一个名字只能装一份；hc 的模板目录是平的，两个团队共用前缀会争同一个模板名，安装器会拒绝后装的那个，并点名先装的那个。成员名最长 32 个字符（hc 的上限）。评审的名字最长，是 <前缀>-review-<短名>-<类型>-r<N>，前缀和短名的长度加起来不要超过 13。正文四个小节：角色与模板、命名前缀、工作区、路径。你的环境里有会把 Commander 带偏的具体规则时，再加第五小节"本机要留意的其他规则"，一条一行，比如"某仓的项目记忆里有'自审后再交'，这条对 Commander 不适用"。
 3. 改 `templates/`。文件名是 `<前缀>-<键>.md`，frontmatter 的 `name` 与文件名相同，文件名最长 32 个字符，不能带空白。`command` 换成你要的 agent 和模型，模型参数直接写进去（如 `claude --model <模型>`），"用 X"才有可替换的位置。
 4. 安装：`sh install.sh --with-cowork --team <名字>`。
 
@@ -131,5 +134,5 @@ hc 的模板目录里如果已经有同名的普通文件：内容和这次要�
 - oh-my-herdr 里：`skills/herdr-cowork/PROTOCOL.md`、`skills/herdr-cowork/README.md`、`skills/herdr-cowork/teams/example/`。
 - herdr-cowork skill 本体：同目录的 `SKILL.md`，从外部收编，`--with-skills` 只装它。
 - 团队包：`~/.config/cowork/teams/<团队名>/`，也可以是任何目录，用 `--team` 给路径。仓库自带的示例在 `skills/herdr-cowork/teams/example/`，按团队名也找得到它。
-- 装好的 skill：`~/.agents/skills/<团队名>-herdr-cowork/`。
+- 装好的 skill：`~/.agents/skills/<skill 名>/`。
 - 验收：`sh skills/herdr-cowork/tests/install-cowork.sh`。

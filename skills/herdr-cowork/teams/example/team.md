@@ -1,5 +1,5 @@
 ---
-team: example
+name: herdr-example
 prefix: example
 ---
 
