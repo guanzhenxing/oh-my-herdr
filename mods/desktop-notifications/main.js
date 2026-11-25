@@ -33,6 +33,11 @@ const firstExecutable = async (paths) => {
   return null;
 };
 
+// terminal-notifier refuses a value that starts with '[', '(', '{' or a quote
+// (exit 2, "Could not read the value") — codex's "[ ! ] Action Required" titles
+// hit this — and says to escape it with a backslash, which it then strips.
+const esc = (s) => (/^[\[({'"]/.test(s) ? `\\${s}` : s);
+
 export default class DesktopNotifications extends View {
   init(_props, cx) {
     this.known = null;
@@ -95,8 +100,8 @@ export default class DesktopNotifications extends View {
 
   async post(sender, n) {
     if (sender === "terminal-notifier") {
-      const args = ["-title", n.title, "-message", n.body, "-group", GROUP + n.address, "-activate", BUNDLE];
-      if (n.subtitle) args.push("-subtitle", n.subtitle);
+      const args = ["-title", esc(n.title), "-message", esc(n.body), "-group", GROUP + n.address, "-activate", BUNDLE];
+      if (n.subtitle) args.push("-subtitle", esc(n.subtitle));
       if (this.app) args.push("-execute", `${sh(this.app)} do agent.focus ${sh(JSON.stringify({ terminal: n.address }))}`);
       const r = await notifier(this.bin, args).catch(() => ({ code: -1 }));
       if (r.code === 0) return;
