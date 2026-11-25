@@ -1,5 +1,5 @@
 ---
-name: example-dev
+name: backend-dev
 description: 开发角色。方案与计划签完字后按任务实现功能、补单测、提交。
 command: claude
 ---

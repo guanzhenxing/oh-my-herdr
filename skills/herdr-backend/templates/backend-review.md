@@ -1,5 +1,5 @@
 ---
-name: example-review
+name: backend-review
 description: 评审角色。方案定稿前审设计、计划开工前审拆分、合并前审代码；每轮新起，用完即清。
 command: codex --no-daemon --sandbox workspace-write
 ---

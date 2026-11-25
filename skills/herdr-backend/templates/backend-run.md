@@ -1,5 +1,5 @@
 ---
-name: example-run
+name: backend-run
 description: 执行角色。跑验证、回归、记基线，也做提交、推送、发布部署、运行服务等运维操作；只执行，不改源码。
 command: omp
 ---

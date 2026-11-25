@@ -1,5 +1,5 @@
 ---
-name: example-test
+name: backend-test
 description: 测试角色。按方案的验收条件推用例、出用例清单时起。
 command: omp
 ---

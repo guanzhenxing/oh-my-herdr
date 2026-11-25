@@ -1,5 +1,5 @@
 ---
-name: example-arch
+name: backend-arch
 description: 架构角色。需求→条目/设计文档/ADR/任务拆分，方案讨论、答疑、契约维护时起。
 command: claude
 ---
