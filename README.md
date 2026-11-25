@@ -81,7 +81,6 @@ agent skill（收编在 `skills/`，可选）。SKILL.md 会装到 `~/.agents/sk
 收编的 skill 手动刷新：抓取 gist，把 frontmatter 的 `name` 改成
 `herdr-cowork`，替换 `skills/herdr-cowork/SKILL.md` 并提交；已安装用户用
 `sh install.sh --with-skills --yes` 升级（软链指向目录，会跟随新副本）。
-
 `skills/herdr-backend/` 的通用协议更新后，没有直接改过装好的文件的，重跑 `sh install.sh --with-cowork --team <团队名> --yes`；直接改过的（包括对 Commander 说过"以后 X 都用 Y"），把 `--team` 指向 `~/.agents/skills/<skill 名>`，本机的改动才会保留。验收：`sh skills/herdr-backend/tests/install-cowork.sh`。
 `previews/render.sh` 用无头 Chrome 从 `previews/preview.html` 重绘 `preview.png`：
 预览是一份带演示数据的 HTML mockup，所以不会发布你自己工作的截图。
