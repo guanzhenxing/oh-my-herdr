@@ -17,12 +17,28 @@ const notifier = (bin, args) => exec("perl", ["-e", "alarm shift; exec @ARGV", "
 // Quotes one word for sh.
 const sh = (s) => `'${String(s).replace(/'/g, `'\\''`)}'`;
 
+// A command's absolute path on PATH, or null.
+const onPath = async (cmd) => {
+  const r = await exec("/bin/sh", ["-c", `command -v ${cmd}`]).catch(() => ({ code: 1, stdout: "" }));
+  return r.code === 0 ? r.stdout.trim() : null;
+};
+
+// First of these paths that runs. A GUI-launched Herdr inherits launchd's PATH
+// (/usr/bin:/bin:/usr/sbin:/sbin): no Homebrew, no ~/.local/bin — so the
+// absolute spots come first, and PATH is the fallback for a shell-launched app.
+const firstExecutable = async (paths) => {
+  for (const p of paths) {
+    if ((await exec("test", ["-x", p]).catch(() => ({ code: 1 }))).code === 0) return p;
+  }
+  return null;
+};
+
 export default class DesktopNotifications extends View {
   init(_props, cx) {
     this.known = null;
     this.sender = null; // "terminal-notifier" | "osascript" | "notify-send" | "none", found on first use
     this.app = null; // herdr-app's path, for click-to-focus
-    this.bin = "terminal-notifier"; // or the Herdr-icon copy, when installed
+    this.bin = null; // terminal-notifier's absolute path, found on first use
     // render runs on every live change; the timer covers a hidden block.
     cx.timer.every(2000, () => this.check());
   }
@@ -58,13 +74,19 @@ export default class DesktopNotifications extends View {
     const has = async (cmd) => (await exec("/bin/sh", ["-c", `command -v ${cmd}`]).catch(() => ({ code: 1, stdout: "" }))).code === 0;
     const platform = window()?.platform;
     if (platform === "macos") {
-      const own = `${home()}/${HERDR_NOTIFIER}`;
-      if ((await exec("test", ["-x", own]).catch(() => ({ code: 1 }))).code === 0) this.bin = own;
-      this.sender = this.bin === own || (await has("terminal-notifier")) ? "terminal-notifier" : "osascript";
-      const found = await exec("/bin/sh", ["-c", "command -v herdr-app"]).catch(() => null);
-      this.app = found?.code === 0 ? found.stdout.trim() : null;
+      this.bin = (await firstExecutable([
+        `${home()}/${HERDR_NOTIFIER}`, // the Herdr-icon copy, when installed
+        "/opt/homebrew/bin/terminal-notifier",
+        "/usr/local/bin/terminal-notifier",
+      ])) ?? (await onPath("terminal-notifier"));
+      this.sender = this.bin ? "terminal-notifier" : "osascript";
+      this.app = (await firstExecutable([
+        `${home()}/.local/bin/herdr-app`,
+        "/opt/homebrew/bin/herdr-app",
+        "/usr/local/bin/herdr-app",
+      ])) ?? (await onPath("herdr-app"));
     } else if (platform === "linux") {
-      this.sender = (await has("notify-send")) ? "notify-send" : "none";
+      this.sender = (await onPath("notify-send")) ? "notify-send" : "none";
     } else {
       this.sender = "none";
     }
