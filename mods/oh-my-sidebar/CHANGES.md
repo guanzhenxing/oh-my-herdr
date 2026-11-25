@@ -41,7 +41,10 @@ Modified files:
   its header is the Spaces/Agents tab bar plus the sort menu (in the rail, the icon tab bar alone);
   no rule above groups and no top border — the Spaces tab draws neither, so the tabs match;
   a sub-agent kept as a pane shows only nested under its parent (not also
-  as its own row), and clicking it focuses its pane instead of peeking.
+  as its own row), and clicking it focuses its pane instead of peeking;
+  ported Herdr 0.1.17/0.1.18's agents-list fix: a kept sub-agent keeps its own
+  "done" on its row (it used to show Idle), and a helper's done no longer pulls
+  a working parent out of Working.
 - `git/pr-status.js`: finds each checkout's issue (git-config link, PR closing references,
   "Closes #N", or a branch number checked against GitHub) and carries it with the PRs. When `gh`
   is missing or not logged in, one notification says GitHub is unavailable (once per run, deduped

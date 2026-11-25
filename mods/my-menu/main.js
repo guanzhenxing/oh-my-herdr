@@ -44,6 +44,7 @@ function sections(p, git) {
       const toProgram = term?.labels?.["herdr.right-click"] === "program";
       return [
         { label: "布局", items: [
+          ["Rename", "pane.rename", { pane: tg.pane }],
           ["Split right", "pane.split", { direction: "right", pane: tg.pane }],
           ["Split down", "pane.split", { direction: "down", pane: tg.pane }],
           ["Zoom", "pane.zoom", { pane: tg.pane }],
@@ -113,7 +114,7 @@ const closes = (it) => it[0].startsWith("Close");
 function menuIcon(it) {
   const command = it[1];
   if (command === "hibernate") return `mods/hibernate/${it[2].action === "wake" ? "sun" : "moon"}.svg`;
-  const name = closes(it) ? "x" : command === "agent-handoff" ? "terminal" : command.endsWith(".rename") ? "square-pen" : command.endsWith(".new") ? "plus" : command === "worktree" ? "git-branch" : command === "move-folder" ? "folder" : command === "note" ? "file-text" : command === "app.help" ? "terminal" : command === "app.theme" || command === "project-settings" ? "settings" : command === "pane.split" ? "panel-right" : command === "pane.zoom" ? "square" : "terminal";
+  const name = closes(it) ? "x" : command === "agent-handoff" ? "terminal" : command.endsWith(".rename") ? "square-pen" : command.endsWith(".new") ? "plus" : command === "worktree" ? "git-branch" : command === "move-folder" ? "folder" : command === "note" ? "file-text" : command === "app.help" ? "terminal" : command === "app.theme" || command === "project-settings" ? "settings" : command === "pane.split" ? (it[2]?.direction === "down" ? "panel-bottom" : "panel-right") : command === "pane.zoom" ? "square" : "terminal";
   return `mods/workspace-chrome/${name}.svg`;
 }
 
