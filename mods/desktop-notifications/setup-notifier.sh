@@ -29,5 +29,11 @@ fi
 /usr/libexec/PlistBuddy -c 'Set :CFBundleName Herdr Notifier' "$DST/Contents/Info.plist"
 /usr/libexec/PlistBuddy -c 'Set :CFBundleDisplayName Herdr Notifier' "$DST/Contents/Info.plist" 2>/dev/null ||
   /usr/libexec/PlistBuddy -c 'Add :CFBundleDisplayName string Herdr Notifier' "$DST/Contents/Info.plist"
+# Editing the bundle breaks its code signature, and macOS then refuses the app's
+# notifications ("not allowed for this application") without even asking. Re-sign
+# ad hoc and prove the copy can post before calling this done.
+codesign --force --deep -s - "$DST" >/dev/null
+"$DST/Contents/MacOS/terminal-notifier" -title "Herdr Notifier" -message "setup check" -group herdr-notifier-setup
+"$DST/Contents/MacOS/terminal-notifier" -remove herdr-notifier-setup >/dev/null 2>&1 || true
 touch "$DST"
-echo "Installed $DST. The mod picks it up the next time it loads."
+echo "Installed $DST (re-signed, test post OK). The mod picks it up the next time it loads."
