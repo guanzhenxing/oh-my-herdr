@@ -25,7 +25,7 @@ agent skill（收编在 `skills/`，可选）。SKILL.md 会装到 `~/.agents/sk
 （`~/.pi/agent/skills/`）；home 目录不存在的 agent 会被跳过并列出，而不是创建；未安装 Cursor 则不建链接——装好之后照其他条目补一个软链即可。卸载：`rm -rf ~/.agents/skills/herdr-cowork` 和那五个 `herdr-cowork`
 软链。
 
-加 `--with-cowork --team <团队名或团队包目录>` 还会安装一个 cowork 团队 skill（[skills/cowork/](skills/cowork/README.md)，可选）。它把仓库里的通用协议和团队包的配置拼成一份 SKILL.md，装到 `~/.agents/skills/<团队名>-herdr-cowork/`，软链到同样五处 agent 目录，并把团队包里的角色模板软链进 hc 的模板目录 `~/.config/herdr-core/templates/`（hc 的模板目录不存在则跳过并列出）。团队包放在 `~/.config/cowork/teams/<团队名>/`，不随本仓库分发（仓库自带的示例包除外），做法见 [skills/cowork/README.md](skills/cowork/README.md)；不带 `--team` 只列出已知的团队包。hc 模板目录里已有的同名普通文件，内容与要链接到的模板相同的会换成软链；这一步不需要 `--yes`，内容不变。带 `--yes` 时，它会覆盖该目录里受管理的四项（SKILL.md、README.md、team.md、`templates/`），删掉团队包里已经没有的旧模板和它们的软链，并重建指向别处的软链；五处 agent 目录里已有的 `<团队名>-herdr-cowork` 真实目录或普通文件会被删掉再重建；hc 模板目录里内容不同的同名普通文件和目录不动。卸载：删 `~/.agents/skills/<团队名>-herdr-cowork`、那五处 `<团队名>-herdr-cowork` 软链，以及 hc 模板目录里指向该目录的软链。
+加 `--with-cowork --team <团队名或团队包目录>` 还会安装一个 cowork 团队 skill（[skills/herdr-cowork/](skills/herdr-cowork/README.md)，可选）。它把仓库里的通用协议和团队包的配置拼成一份 SKILL.md，装到 `~/.agents/skills/<团队名>-herdr-cowork/`，软链到同样五处 agent 目录，并把团队包里的角色模板软链进 hc 的模板目录 `~/.config/herdr-core/templates/`（hc 的模板目录不存在则跳过并列出）。团队包放在 `~/.config/cowork/teams/<团队名>/`，不随本仓库分发（仓库自带的示例包除外），做法见 [skills/herdr-cowork/README.md](skills/herdr-cowork/README.md)；不带 `--team` 只列出已知的团队包。hc 模板目录里已有的同名普通文件，内容与要链接到的模板相同的会换成软链；这一步不需要 `--yes`，内容不变。带 `--yes` 时，它会覆盖该目录里受管理的四项（SKILL.md、README.md、team.md、`templates/`），删掉团队包里已经没有的旧模板和它们的软链，并重建指向别处的软链；五处 agent 目录里已有的 `<团队名>-herdr-cowork` 真实目录或普通文件会被删掉再重建；hc 模板目录里内容不同的同名普通文件和目录不动。卸载：删 `~/.agents/skills/<团队名>-herdr-cowork`、那五处 `<团队名>-herdr-cowork` 软链，以及 hc 模板目录里指向该目录的软链。
 
 手动安装：
 
@@ -70,7 +70,7 @@ agent skill（收编在 `skills/`，可选）。SKILL.md 会装到 `~/.agents/sk
 - **Skills（可选，`--with-skills`）：** 不联网——收编的
   `skills/herdr-cowork/SKILL.md` 被拷贝并软链（位置见上）。这个 skill 是一套提示词协议：采用它作为 commander 的 agent 会运行 `hc` 启动成员 agent CLI
   （各自在自己的权限下），在当前工作区写 `TEAM.md`，并通过 `herdr-app` 重命名 tab。它的 frontmatter `allowed-tools` 只在 Claude Code 里预授权 `hc`/`herdr-app`；其他 agent 走各自的审批流程。
-- **Cowork（可选，`--with-cowork --team`）：** 不联网——`skills/cowork/` 里的通用协议和本机的团队包拼成一份 skill，连同五处 agent 软链和 hc 模板目录里的软链（位置见上）。它是一套提示词协议：采用它的 agent 作为 Commander 经 `hc` 启动成员 CLI；成员按团队包模板的 `command` 运行，权限随各自的 harness，其中执行角色可以按用户的点名提交、推送、发布部署，开发角色在实现任务时会自行提交。团队包不随本仓库分发。它的 frontmatter `allowed-tools` 同样只在 Claude Code 里预授权 `hc`/`herdr-app`。
+- **Cowork（可选，`--with-cowork --team`）：** 不联网——`skills/herdr-cowork/` 里的通用协议和本机的团队包拼成一份 skill，连同五处 agent 软链和 hc 模板目录里的软链（位置见上）。它是一套提示词协议：采用它的 agent 作为 Commander 经 `hc` 启动成员 CLI；成员按团队包模板的 `command` 运行，权限随各自的 harness，其中执行角色可以按用户的点名提交、推送、发布部署，开发角色在实现任务时会自行提交。团队包不随本仓库分发。它的 frontmatter `allowed-tools` 同样只在 Claude Code 里预授权 `hc`/`herdr-app`。
 
 ## 更新本仓库
 
@@ -82,7 +82,7 @@ agent skill（收编在 `skills/`，可选）。SKILL.md 会装到 `~/.agents/sk
 `herdr-cowork`，替换 `skills/herdr-cowork/SKILL.md` 并提交；已安装用户用
 `sh install.sh --with-skills --yes` 升级（软链指向目录，会跟随新副本）。
 
-`skills/cowork/` 的通用协议更新后，没有直接改过装好的文件的，重跑 `sh install.sh --with-cowork --team <团队名> --yes`；直接改过的（包括对 Commander 说过"以后 X 都用 Y"），把 `--team` 指向 `~/.agents/skills/<团队名>-herdr-cowork`，本机的改动才会保留。验收：`sh skills/cowork/tests/install-cowork.sh`。
+`skills/herdr-cowork/` 的通用协议更新后，没有直接改过装好的文件的，重跑 `sh install.sh --with-cowork --team <团队名> --yes`；直接改过的（包括对 Commander 说过"以后 X 都用 Y"），把 `--team` 指向 `~/.agents/skills/<团队名>-herdr-cowork`，本机的改动才会保留。验收：`sh skills/herdr-cowork/tests/install-cowork.sh`。
 `previews/render.sh` 用无头 Chrome 从 `previews/preview.html` 重绘 `preview.png`：
 预览是一份带演示数据的 HTML mockup，所以不会发布你自己工作的截图。
 

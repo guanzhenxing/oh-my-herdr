@@ -9,7 +9,7 @@
 #   sh install.sh --dry-run    report only, write nothing
 #   sh install.sh --with-skills  also install the herdr-cowork skill (opt-in; see README)
 #   sh install.sh --with-cowork --team <name|path>  also install one cowork team skill and link its
-#                              templates into hc (opt-in; see skills/cowork/README.md)
+#                              templates into hc (opt-in; see skills/herdr-cowork/README.md)
 set -e
 # Where the user ran the installer: a relative --team path is resolved against it.
 cowork_caller_dir=$(pwd)
@@ -50,7 +50,7 @@ fi
 # cowork (--with-cowork --team): the team pack is located and validated here, before
 # anything is decided, so a bad pack exits without a single write. A team pack is a
 # directory holding team.md (frontmatter: team, prefix) and templates/.
-cowork_dir=$(pwd)/skills/cowork
+cowork_dir=$(pwd)/skills/herdr-cowork
 # The known team packs: every subdirectory of the two places a pack can live.
 cowork_known_teams() {
   for cw_root in "$HOME/.config/cowork/teams" "$cowork_dir/teams"; do
@@ -441,7 +441,7 @@ fi
 # cowork (--with-cowork --team): everything is decided here, before the dry-run gate,
 # and only written after it. SKILL.md is assembled into a temp file now, so the
 # comparison with the installed copy is exact and a dry run writes nothing.
-cowork_boundary='<!-- 以上是通用协议，由 oh-my-herdr 的 skills/cowork/PROTOCOL.md 提供；以下是本团队配置，安装时取自团队包的 team.md。个人改动请落在团队包或装好的模板里（改 team.md 后要重跑安装器才生效），不要直接改本文件。 -->'
+cowork_boundary='<!-- 以上是通用协议，由 oh-my-herdr 的 skills/herdr-cowork/PROTOCOL.md 提供；以下是本团队配置，安装时取自团队包的 team.md。个人改动请落在团队包或装好的模板里（改 team.md 后要重跑安装器才生效），不要直接改本文件。 -->'
 cowork_skill_dir="$HOME/.agents/skills/$cowork_team-herdr-cowork"
 cowork_hc_dir="$HOME/.config/herdr-core/templates"
 cowork_skill_state=""; cowork_links=""; cowork_link_notes=""; cowork_hc_links=""; cw_notes=""

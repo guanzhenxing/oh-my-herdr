@@ -8,14 +8,14 @@
 # holds stub herdr-automations and herdr-app commands: the installer then neither
 # builds nor downloads the CLI and never talks to a real Herdr.
 #
-#   sh skills/cowork/tests/install-cowork.sh        exit 0 when every check passes
+#   sh skills/herdr-cowork/tests/install-cowork.sh        exit 0 when every check passes
 set -u
 
 REPO=$(cd "$(dirname "$0")/../../.." && pwd)
 INSTALL="$REPO/install.sh"
-PROTOCOL="$REPO/skills/cowork/PROTOCOL.md"
-EXAMPLE="$REPO/skills/cowork/teams/example"
-BOUNDARY='<!-- 以上是通用协议，由 oh-my-herdr 的 skills/cowork/PROTOCOL.md 提供；以下是本团队配置，安装时取自团队包的 team.md。个人改动请落在团队包或装好的模板里（改 team.md 后要重跑安装器才生效），不要直接改本文件。 -->'
+PROTOCOL="$REPO/skills/herdr-cowork/PROTOCOL.md"
+EXAMPLE="$REPO/skills/herdr-cowork/teams/example"
+BOUNDARY='<!-- 以上是通用协议，由 oh-my-herdr 的 skills/herdr-cowork/PROTOCOL.md 提供；以下是本团队配置，安装时取自团队包的 team.md。个人改动请落在团队包或装好的模板里（改 team.md 后要重跑安装器才生效），不要直接改本文件。 -->'
 
 WORK=$(mktemp -d)
 trap 'rm -rf "$WORK"' EXIT
@@ -213,7 +213,7 @@ else
 fi
 check "exactly one real name line" 1 "$(grep -c '^name: example-herdr-cowork$' "$S/SKILL.md")"
 check "no placeholder left" 0 "$(grep -c 'TEAM-herdr-cowork' "$S/SKILL.md")"
-for pair in "README.md:$REPO/skills/cowork/README.md" "team.md:$EXAMPLE/team.md"; do
+for pair in "README.md:$REPO/skills/herdr-cowork/README.md" "team.md:$EXAMPLE/team.md"; do
   if cmp -s "${pair#*:}" "$S/${pair%%:*}"; then ok "the copy of ${pair%%:*} is exact"
   else bad "the copy of ${pair%%:*} is exact" "it differs"; fi
 done
@@ -578,7 +578,7 @@ printf '# an older README\n' > "$S/README.md"
 run --with-cowork --team "$S" --yes
 check "exit status" 0 "$RC"
 check "a locally changed command survives" "command: echo my-model" "$(grep '^command:' "$S/templates/t2-arch.md")"
-if cmp -s "$REPO/skills/cowork/README.md" "$S/README.md"; then ok "README.md, which is the repo's, is brought up to date"
+if cmp -s "$REPO/skills/herdr-cowork/README.md" "$S/README.md"; then ok "README.md, which is the repo's, is brought up to date"
 else bad "README.md, which is the repo's, is brought up to date" "it still differs"; fi
 expected_skill "$S" t2 > "$WORK/expected-t2.md"
 if cmp -s "$WORK/expected-t2.md" "$S/SKILL.md"; then ok "SKILL.md is reassembled"

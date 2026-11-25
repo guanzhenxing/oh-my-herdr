@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Add `skills/cowork/` (a generic Commander protocol, a README, an example team pack) and an opt-in `install.sh --with-cowork --team <name|path>` stage that assembles one team's SKILL.md, installs it to `~/.agents/skills/<team>-herdr-cowork/`, links it for five agents, and links the team's hc templates into `~/.config/herdr-core/templates/`.
+**Goal:** Add under `skills/herdr-cowork/`, beside the vendored `SKILL.md`, a generic Commander protocol, a README, an example team pack and an acceptance script, and an opt-in `install.sh --with-cowork --team <name|path>` stage that assembles one team's SKILL.md, installs it to `~/.agents/skills/<team>-herdr-cowork/`, links it for five agents, and links the team's hc templates into `~/.config/herdr-core/templates/`.
 
 **Architecture:** Three layers. The generic protocol lives in the repo (`PROTOCOL.md`), the team pack lives outside it (`team.md` + `templates/`), and the installer concatenates them at install time so the Commander reads a single file at run time. The installer stage follows the existing decide-early / report / write-late pattern of `--with-skills`: a flag and a front guard, a decision phase before the `--dry-run` exit gate, and a write block after the herdr-cowork write block.
 
@@ -12,17 +12,20 @@
 
 **Reading the file blocks:** Every block that creates a file is preceded by a marker line `<!-- file: path -->` and fenced with four backticks. The block content is the file, byte for byte, and each file ends with exactly one newline.
 
+**Where the files live:** Tasks 0 to 5 were executed with these files in a directory of their own, `skills/cowork/`, next to the vendored `skills/herdr-cowork/`. The maintainer then found the two side by side odd, so a later commit on this branch moved them into `skills/herdr-cowork/`, beside `SKILL.md`. The paths below are the ones that hold now.
+
 ---
 
 ## File structure
 
 | File | Responsibility |
 |---|---|
-| `skills/cowork/PROTOCOL.md` | The generic Commander protocol with a placeholder `name`. Assembled into a team's SKILL.md. |
-| `skills/cowork/README.md` | Human documentation: what it is, how to install, upgrade, uninstall, and how to make a team pack. |
-| `skills/cowork/teams/example/team.md` | The example team config: the four required sections. |
-| `skills/cowork/teams/example/templates/example-{arch,dev,review,test,run}.md` | The five role templates with generic commands. The reference copy of the role prompts. |
-| `skills/cowork/tests/install-cowork.sh` | Acceptance script for the installer stage. Runs the real `install.sh` in throwaway HOME directories. |
+| `skills/herdr-cowork/SKILL.md` | The vendored herdr-cowork skill, already in the repo. Not changed; `--with-skills` still copies this one file. |
+| `skills/herdr-cowork/PROTOCOL.md` | The generic Commander protocol with a placeholder `name`. Assembled into a team's SKILL.md. |
+| `skills/herdr-cowork/README.md` | Human documentation: what it is, how to install, upgrade, uninstall, and how to make a team pack. |
+| `skills/herdr-cowork/teams/example/team.md` | The example team config: the four required sections. |
+| `skills/herdr-cowork/teams/example/templates/example-{arch,dev,review,test,run}.md` | The five role templates with generic commands. The reference copy of the role prompts. |
+| `skills/herdr-cowork/tests/install-cowork.sh` | Acceptance script for the installer stage. Runs the real `install.sh` in throwaway HOME directories. |
 | `install.sh` | Gains `--with-cowork`, `--team`, the shared `skill_agent_homes` table, and the cowork stage. |
 | `README.md` | Documents the new flag, its write surface, its runtime surface, upgrade and uninstall. |
 | `docs/superpowers/specs/2026-11-24-cowork-framework-design.md` | The design. Task 4 aligns it with what is built; every amended passage is quoted there. |
@@ -77,14 +80,14 @@ Fill the file in before going on. Expected afterwards: a line count above 0. Tas
 ### Task 1: Write the acceptance script (RED)
 
 **Files:**
-- Create: `skills/cowork/tests/install-cowork.sh`
+- Create: `skills/herdr-cowork/tests/install-cowork.sh`
 - Test: it is the test.
 
-The script covers the checks in the spec's 验收 section and every row of the installer's three decision tables. It fails now, because `install.sh` knows neither flag and `skills/cowork/` holds only this script.
+The script covers the checks in the spec's 验收 section and every row of the installer's three decision tables. It fails now, because `install.sh` knows neither flag and, beside the vendored `SKILL.md`, `skills/herdr-cowork/` holds only this script.
 
 - [ ] **Step 1: Create the script**
 
-<!-- file: skills/cowork/tests/install-cowork.sh -->
+<!-- file: skills/herdr-cowork/tests/install-cowork.sh -->
 ````
 #!/bin/sh
 # Acceptance tests for install.sh's cowork stage (--with-cowork --team). They cover the
@@ -96,14 +99,14 @@ The script covers the checks in the spec's 验收 section and every row of the i
 # holds stub herdr-automations and herdr-app commands: the installer then neither
 # builds nor downloads the CLI and never talks to a real Herdr.
 #
-#   sh skills/cowork/tests/install-cowork.sh        exit 0 when every check passes
+#   sh skills/herdr-cowork/tests/install-cowork.sh        exit 0 when every check passes
 set -u
 
 REPO=$(cd "$(dirname "$0")/../../.." && pwd)
 INSTALL="$REPO/install.sh"
-PROTOCOL="$REPO/skills/cowork/PROTOCOL.md"
-EXAMPLE="$REPO/skills/cowork/teams/example"
-BOUNDARY='<!-- 以上是通用协议，由 oh-my-herdr 的 skills/cowork/PROTOCOL.md 提供；以下是本团队配置，安装时取自团队包的 team.md。个人改动请落在团队包或装好的模板里（改 team.md 后要重跑安装器才生效），不要直接改本文件。 -->'
+PROTOCOL="$REPO/skills/herdr-cowork/PROTOCOL.md"
+EXAMPLE="$REPO/skills/herdr-cowork/teams/example"
+BOUNDARY='<!-- 以上是通用协议，由 oh-my-herdr 的 skills/herdr-cowork/PROTOCOL.md 提供；以下是本团队配置，安装时取自团队包的 team.md。个人改动请落在团队包或装好的模板里（改 team.md 后要重跑安装器才生效），不要直接改本文件。 -->'
 
 WORK=$(mktemp -d)
 trap 'rm -rf "$WORK"' EXIT
@@ -301,7 +304,7 @@ else
 fi
 check "exactly one real name line" 1 "$(grep -c '^name: example-herdr-cowork$' "$S/SKILL.md")"
 check "no placeholder left" 0 "$(grep -c 'TEAM-herdr-cowork' "$S/SKILL.md")"
-for pair in "README.md:$REPO/skills/cowork/README.md" "team.md:$EXAMPLE/team.md"; do
+for pair in "README.md:$REPO/skills/herdr-cowork/README.md" "team.md:$EXAMPLE/team.md"; do
   if cmp -s "${pair#*:}" "$S/${pair%%:*}"; then ok "the copy of ${pair%%:*} is exact"
   else bad "the copy of ${pair%%:*} is exact" "it differs"; fi
 done
@@ -666,7 +669,7 @@ printf '# an older README\n' > "$S/README.md"
 run --with-cowork --team "$S" --yes
 check "exit status" 0 "$RC"
 check "a locally changed command survives" "command: echo my-model" "$(grep '^command:' "$S/templates/t2-arch.md")"
-if cmp -s "$REPO/skills/cowork/README.md" "$S/README.md"; then ok "README.md, which is the repo's, is brought up to date"
+if cmp -s "$REPO/skills/herdr-cowork/README.md" "$S/README.md"; then ok "README.md, which is the repo's, is brought up to date"
 else bad "README.md, which is the repo's, is brought up to date" "it still differs"; fi
 expected_skill "$S" t2 > "$WORK/expected-t2.md"
 if cmp -s "$WORK/expected-t2.md" "$S/SKILL.md"; then ok "SKILL.md is reassembled"
@@ -700,8 +703,8 @@ echo "passed $pass, failed $fail"
 - [ ] **Step 2: Make it executable and check its syntax**
 
 ```bash
-chmod +x skills/cowork/tests/install-cowork.sh
-sh -n skills/cowork/tests/install-cowork.sh && echo "syntax ok"
+chmod +x skills/herdr-cowork/tests/install-cowork.sh
+sh -n skills/herdr-cowork/tests/install-cowork.sh && echo "syntax ok"
 ```
 
 Expected: `syntax ok`.
@@ -709,7 +712,7 @@ Expected: `syntax ok`.
 - [ ] **Step 3: Run it and watch it fail**
 
 ```bash
-sh skills/cowork/tests/install-cowork.sh 2>&1 | tail -n 15
+sh skills/herdr-cowork/tests/install-cowork.sh 2>&1 | tail -n 15
 ```
 
 Expected: the last line is `passed N, failed M` with `failed` above 0, and the script exits non-zero. Sections 1, 2 and 3 pass in full and no other section does: every check that needs the new flag or the new files fails. The checks that pass elsewhere hold whenever the installer does nothing, such as "zero writes". The errors the installer prints about files that do not exist yet belong to the missing files.
@@ -728,7 +731,7 @@ not_clean() {
   if [ "$a" -gt 1 ] || [ "$b" -gt 1 ]; then echo "could not check $1"; return 0; fi
   [ "$a" = 0 ] || [ "$b" = 0 ]
 }
-for target in skills/cowork/tests/install-cowork.sh \
+for target in skills/herdr-cowork/tests/install-cowork.sh \
               docs/superpowers/specs/2026-11-24-cowork-framework-design.md \
               docs/superpowers/plans/2026-11-24-cowork-framework.md; do
   [ -f "$target" ] || { echo "missing: $target"; found=1; continue; }
@@ -742,7 +745,7 @@ Expected: `clean`. A matched line names a file and a line to rewrite. `could not
 - [ ] **Step 5: Commit the failing test and the design**
 
 ```bash
-git add skills/cowork/tests/install-cowork.sh docs/superpowers/specs/2026-11-24-cowork-framework-design.md docs/superpowers/plans/2026-11-24-cowork-framework.md
+git add skills/herdr-cowork/tests/install-cowork.sh docs/superpowers/specs/2026-11-24-cowork-framework-design.md docs/superpowers/plans/2026-11-24-cowork-framework.md
 git commit -m "test(cowork): add the install.sh --with-cowork acceptance script"
 ```
 
@@ -751,26 +754,26 @@ git commit -m "test(cowork): add the install.sh --with-cowork acceptance script"
 ### Task 2: Add the protocol, the README and the example team pack
 
 **Files:**
-- Create: `skills/cowork/PROTOCOL.md`
-- Create: `skills/cowork/README.md`
-- Create: `skills/cowork/teams/example/team.md`
-- Create: `skills/cowork/teams/example/templates/example-arch.md`
-- Create: `skills/cowork/teams/example/templates/example-dev.md`
-- Create: `skills/cowork/teams/example/templates/example-review.md`
-- Create: `skills/cowork/teams/example/templates/example-test.md`
-- Create: `skills/cowork/teams/example/templates/example-run.md`
+- Create: `skills/herdr-cowork/PROTOCOL.md`
+- Create: `skills/herdr-cowork/README.md`
+- Create: `skills/herdr-cowork/teams/example/team.md`
+- Create: `skills/herdr-cowork/teams/example/templates/example-arch.md`
+- Create: `skills/herdr-cowork/teams/example/templates/example-dev.md`
+- Create: `skills/herdr-cowork/teams/example/templates/example-review.md`
+- Create: `skills/herdr-cowork/teams/example/templates/example-test.md`
+- Create: `skills/herdr-cowork/teams/example/templates/example-run.md`
 
 The protocol's rules are the ones already smoke-tested on the maintainer's machine, with the team-specific wording made generic. The four required sections the protocol refers to (角色与模板, 命名前缀, 工作区, 路径) are exactly the headings the installer requires in a `team.md`.
 
 - [ ] **Step 1: Create the directories**
 
 ```bash
-mkdir -p skills/cowork/teams/example/templates
+mkdir -p skills/herdr-cowork/teams/example/templates
 ```
 
-- [ ] **Step 2: Create `skills/cowork/PROTOCOL.md`**
+- [ ] **Step 2: Create `skills/herdr-cowork/PROTOCOL.md`**
 
-<!-- file: skills/cowork/PROTOCOL.md -->
+<!-- file: skills/herdr-cowork/PROTOCOL.md -->
 ````markdown
 ---
 name: TEAM-herdr-cowork
@@ -942,16 +945,16 @@ hc run 报找不到模板：先看 `hc templates`。安装时 hc 的模板目录
 `hc wait` 的 timeout 不是失败。其余以 `hc --skill` 为准。
 ````
 
-- [ ] **Step 3: Create `skills/cowork/README.md`**
+- [ ] **Step 3: Create `skills/herdr-cowork/README.md`**
 
-<!-- file: skills/cowork/README.md -->
+<!-- file: skills/herdr-cowork/README.md -->
 ````markdown
 # cowork
 
 在 Herdr 的任一终端里跑一个 agent，对它说一句话，它替你起对应的角色成员。
 每做完一件事它就停下来报状态，下一步做什么由你决定。
 
-本页给人看；agent 不读它，和 SKILL.md 不一致时以 SKILL.md 为准。
+本页给人看；agent 不读它，和装好的团队 skill 的 SKILL.md 不一致时，以 SKILL.md 为准。
 
 ## 它是什么
 
@@ -962,7 +965,7 @@ cowork 是一套 Commander 调度协议，分成两部分：
 
 安装时两者拼成一份 SKILL.md，装成一个名为 `<团队名>-herdr-cowork` 的 agent skill。Commander 运行时只读这一个文件。
 
-它和 `skills/herdr-cowork/` 是两套独立的协议：那一套以 TEAM.md 为注册表，这一套不用 TEAM.md。
+它和 herdr-cowork skill 是两套独立的协议，一个会话里只用一套：那一套以 TEAM.md 为注册表，仓库里就是同目录的 `SKILL.md`，`--with-skills` 装它；这一套不用 TEAM.md。
 
 ## 能说什么
 
@@ -1024,7 +1027,7 @@ cowork 是一套 Commander 调度协议，分成两部分：
 sh install.sh --with-cowork --team <团队名或团队包目录>
 ```
 
-`--team` 的值带斜杠时按路径处理：绝对路径原样使用，相对路径相对于你运行命令的目录。不带斜杠时按团队名处理，依次找 `~/.config/cowork/teams/<团队名>` 和仓库里的 `skills/cowork/teams/<团队名>`，本机的优先。不带 `--team` 只列出已知的团队包，不安装。
+`--team` 的值带斜杠时按路径处理：绝对路径原样使用，相对路径相对于你运行命令的目录。不带斜杠时按团队名处理，依次找 `~/.config/cowork/teams/<团队名>` 和仓库里的 `skills/herdr-cowork/teams/<团队名>`，本机的优先。不带 `--team` 只列出已知的团队包，不安装。
 
 装完之后：
 
@@ -1060,7 +1063,7 @@ hc 的模板目录里如果已经有同名的普通文件：内容和这次要�
 
    ```
    mkdir -p ~/.config/cowork/teams
-   cp -R skills/cowork/teams/example ~/.config/cowork/teams/<名字>
+   cp -R skills/herdr-cowork/teams/example ~/.config/cowork/teams/<名字>
    ```
 
 2. 改 `team.md`。开头两行是登记项：`team` 决定 skill 的名字，`prefix` 是模板名和成员名的前缀，都只用小写字母、数字和连字符。前缀在本机要唯一：hc 的模板目录是平的，两个团队共用一个前缀会争同一个模板名，安装器会拒绝后装的那个，并点名先装的团队。成员名最长 32 个字符（hc 的上限）。评审的名字最长，是 <前缀>-review-<短名>-<类型>-r<N>，前缀和短名的长度加起来不要超过 13。正文四个小节：角色与模板、命名前缀、工作区、路径。你的环境里有会把 Commander 带偏的具体规则时，再加第五小节"本机要留意的其他规则"，一条一行，比如"某仓的项目记忆里有'自审后再交'，这条对 Commander 不适用"。
@@ -1076,15 +1079,16 @@ hc 的模板目录里如果已经有同名的普通文件：内容和这次要�
 
 ## 文件在哪
 
-- oh-my-herdr 里：`skills/cowork/PROTOCOL.md`、`skills/cowork/README.md`、`skills/cowork/teams/example/`。
-- 团队包：`~/.config/cowork/teams/<团队名>/`，也可以是任何目录，用 `--team` 给路径。仓库自带的示例在 `skills/cowork/teams/example/`，按团队名也找得到它。
+- oh-my-herdr 里：`skills/herdr-cowork/PROTOCOL.md`、`skills/herdr-cowork/README.md`、`skills/herdr-cowork/teams/example/`。
+- herdr-cowork skill 本体：同目录的 `SKILL.md`，从外部收编，`--with-skills` 只装它。
+- 团队包：`~/.config/cowork/teams/<团队名>/`，也可以是任何目录，用 `--team` 给路径。仓库自带的示例在 `skills/herdr-cowork/teams/example/`，按团队名也找得到它。
 - 装好的 skill：`~/.agents/skills/<团队名>-herdr-cowork/`。
-- 验收：`sh skills/cowork/tests/install-cowork.sh`。
+- 验收：`sh skills/herdr-cowork/tests/install-cowork.sh`。
 ````
 
-- [ ] **Step 4: Create `skills/cowork/teams/example/team.md`**
+- [ ] **Step 4: Create `skills/herdr-cowork/teams/example/team.md`**
 
-<!-- file: skills/cowork/teams/example/team.md -->
+<!-- file: skills/herdr-cowork/teams/example/team.md -->
 ````markdown
 ---
 team: example
@@ -1125,7 +1129,7 @@ prefix: example
 
 - [ ] **Step 5: Create the five example templates**
 
-<!-- file: skills/cowork/teams/example/templates/example-arch.md -->
+<!-- file: skills/herdr-cowork/teams/example/templates/example-arch.md -->
 ````markdown
 ---
 name: example-arch
@@ -1154,7 +1158,7 @@ command: claude
 通用守则：不启动子 agent；长结论写文件；受阻时说明缺什么，不硬做。做完即停：产物落盘后回报一句结论和路径，不自行发起下一步；需要用户拍板的事直接在本终端说明。
 ````
 
-<!-- file: skills/cowork/teams/example/templates/example-dev.md -->
+<!-- file: skills/herdr-cowork/teams/example/templates/example-dev.md -->
 ````markdown
 ---
 name: example-dev
@@ -1181,7 +1185,7 @@ command: claude
 通用守则：不改契约、不做任务清单以外的事（任务外问题记录上报）；不启动子 agent；受阻时说明缺什么。做完即停：产物落盘后回报一句结论和路径，不自行发起下一步；需要用户拍板的事直接在本终端说明。
 ````
 
-<!-- file: skills/cowork/teams/example/templates/example-review.md -->
+<!-- file: skills/herdr-cowork/teams/example/templates/example-review.md -->
 ````markdown
 ---
 name: example-review
@@ -1202,7 +1206,7 @@ command: codex --no-daemon --sandbox workspace-write
 纪律：只读，不改任何文件，不执行构建测试，不启动子 agent，不参与方案讨论。输入固定四样：当前版文档、上轮意见清单、上轮处理结果、决策记录（docs/adr/ 全部）——看不到拍板记录会把已决定移除的功能当缺陷提。报告写 cwd 的 report.md，由前台读取后代写入仓内 docs/review/<短名>-<类型>-r<N>.md（workspace-write 沙箱 + cwd 在仓外：仓机制性不可写；成员侧 hc send 可能被沙箱拦截，完成信号以 hc wait 为准）。做完即停：写完 report.md 就停，待确认项写在结论行之后，不自行发起下一步。
 ````
 
-<!-- file: skills/cowork/teams/example/templates/example-test.md -->
+<!-- file: skills/herdr-cowork/teams/example/templates/example-test.md -->
 ````markdown
 ---
 name: example-test
@@ -1223,7 +1227,7 @@ command: omp
 通用守则：只推用例；不启动子 agent。做完即停：把结论和待确认项写进产物文件后停下，不自行发起下一步。
 ````
 
-<!-- file: skills/cowork/teams/example/templates/example-run.md -->
+<!-- file: skills/herdr-cowork/teams/example/templates/example-run.md -->
 ````markdown
 ---
 name: example-run
@@ -1259,11 +1263,11 @@ command: omp
 The example pack must satisfy every rule the front guard will enforce.
 
 ```bash
-find skills/cowork -type f | sort
+find skills/herdr-cowork -type f | sort
 echo "--- name lines ---"
-grep -n '^name:' skills/cowork/PROTOCOL.md skills/cowork/teams/example/templates/*.md
+grep -n '^name:' skills/herdr-cowork/PROTOCOL.md skills/herdr-cowork/teams/example/templates/*.md
 echo "--- headings the protocol relies on ---"
-grep -n '^### ' skills/cowork/teams/example/team.md
+grep -n '^### ' skills/herdr-cowork/teams/example/team.md
 echo "--- nothing that identifies a team, a machine or an account ---"
 # -i is not reliable for non-ASCII patterns on every grep, so every file is searched
 # once as written and once lower-cased. The list is written in lowercase to match.
@@ -1276,7 +1280,8 @@ not_clean() {
   if [ "$a" -gt 1 ] || [ "$b" -gt 1 ]; then echo "could not check $1"; return 0; fi
   [ "$a" = 0 ] || [ "$b" = 0 ]
 }
-for target in $(find skills/cowork -type f | sort) \
+# The vendored SKILL.md is third-party text that this branch does not change, so it is left out.
+for target in $(find skills/herdr-cowork -type f ! -name SKILL.md | sort) \
               docs/superpowers/plans/2026-11-24-cowork-framework.md \
               docs/superpowers/specs/2026-11-24-cowork-framework-design.md; do
   # A missing file is not a clean one.
@@ -1286,12 +1291,12 @@ done
 [ "$found" = 0 ] && echo "clean"
 ```
 
-Expected: eight files under `skills/cowork/` plus the test script; `PROTOCOL.md` has `name: TEAM-herdr-cowork` on line 2; each template's `name` equals its file name; `team.md` has the four headings 角色与模板, 命名前缀, 工作区, 路径; the last command prints `clean`. If it prints matched lines instead, each one names a file that must be rewritten.
+Expected: ten files under `skills/herdr-cowork/`: the vendored `SKILL.md`, then the eight files of this framework and the test script; `PROTOCOL.md` has `name: TEAM-herdr-cowork` on line 2; each template's `name` equals its file name; `team.md` has the four headings 角色与模板, 命名前缀, 工作区, 路径; the last command prints `clean`. If it prints matched lines instead, each one names a file that must be rewritten.
 
 - [ ] **Step 7: Commit**
 
 ```bash
-git add skills/cowork/PROTOCOL.md skills/cowork/README.md skills/cowork/teams
+git add skills/herdr-cowork/PROTOCOL.md skills/herdr-cowork/README.md skills/herdr-cowork/teams
 git commit -m "feat(cowork): add the generic protocol, README and example team pack"
 ```
 
@@ -1336,7 +1341,7 @@ Insert after it:
 
 ```sh
 #   sh install.sh --with-cowork --team <name|path>  also install one cowork team skill and link its
-#                              templates into hc (opt-in; see skills/cowork/README.md)
+#                              templates into hc (opt-in; see skills/herdr-cowork/README.md)
 ```
 
 - [ ] **Step 3 (E2): Parse the two new flags**
@@ -1406,7 +1411,7 @@ Insert after them:
 # cowork (--with-cowork --team): the team pack is located and validated here, before
 # anything is decided, so a bad pack exits without a single write. A team pack is a
 # directory holding team.md (frontmatter: team, prefix) and templates/.
-cowork_dir=$(pwd)/skills/cowork
+cowork_dir=$(pwd)/skills/herdr-cowork
 # The known team packs: every subdirectory of the two places a pack can live.
 cowork_known_teams() {
   for cw_root in "$HOME/.config/cowork/teams" "$cowork_dir/teams"; do
@@ -1576,7 +1581,7 @@ Insert before it:
 # cowork (--with-cowork --team): everything is decided here, before the dry-run gate,
 # and only written after it. SKILL.md is assembled into a temp file now, so the
 # comparison with the installed copy is exact and a dry run writes nothing.
-cowork_boundary='<!-- 以上是通用协议，由 oh-my-herdr 的 skills/cowork/PROTOCOL.md 提供；以下是本团队配置，安装时取自团队包的 team.md。个人改动请落在团队包或装好的模板里（改 team.md 后要重跑安装器才生效），不要直接改本文件。 -->'
+cowork_boundary='<!-- 以上是通用协议，由 oh-my-herdr 的 skills/herdr-cowork/PROTOCOL.md 提供；以下是本团队配置，安装时取自团队包的 team.md。个人改动请落在团队包或装好的模板里（改 team.md 后要重跑安装器才生效），不要直接改本文件。 -->'
 cowork_skill_dir="$HOME/.agents/skills/$cowork_team-herdr-cowork"
 cowork_hc_dir="$HOME/.config/herdr-core/templates"
 cowork_skill_state=""; cowork_links=""; cowork_link_notes=""; cowork_hc_links=""; cw_notes=""
@@ -1953,7 +1958,7 @@ Expected: `syntax ok`, then `with-skills output identical`.
 - [ ] **Step 11: Run the acceptance script and watch it pass**
 
 ```bash
-sh skills/cowork/tests/install-cowork.sh > /tmp/cowork-acceptance.txt 2>&1; echo "exit=$?"
+sh skills/herdr-cowork/tests/install-cowork.sh > /tmp/cowork-acceptance.txt 2>&1; echo "exit=$?"
 tail -n 3 /tmp/cowork-acceptance.txt
 grep -c '^ok ' /tmp/cowork-acceptance.txt
 grep '^FAIL ' /tmp/cowork-acceptance.txt || echo "no failures"
@@ -1981,7 +1986,7 @@ git commit -m "feat(install): add --with-cowork --team"
 Find the paragraph that ends with the words `卸载：`rm -rf ~/.agents/skills/herdr-cowork` 和那五个 `herdr-cowork`\n软链。` (lines 25–26). Insert after it, as its own paragraph:
 
 ````markdown
-加 `--with-cowork --team <团队名或团队包目录>` 还会安装一个 cowork 团队 skill（[skills/cowork/](skills/cowork/README.md)，可选）。它把仓库里的通用协议和团队包的配置拼成一份 SKILL.md，装到 `~/.agents/skills/<团队名>-herdr-cowork/`，软链到同样五处 agent 目录，并把团队包里的角色模板软链进 hc 的模板目录 `~/.config/herdr-core/templates/`（hc 的模板目录不存在则跳过并列出）。团队包放在 `~/.config/cowork/teams/<团队名>/`，不随本仓库分发（仓库自带的示例包除外），做法见 [skills/cowork/README.md](skills/cowork/README.md)；不带 `--team` 只列出已知的团队包。hc 模板目录里已有的同名普通文件，内容与要链接到的模板相同的会换成软链；这一步不需要 `--yes`，内容不变。带 `--yes` 时，它会覆盖该目录里受管理的四项（SKILL.md、README.md、team.md、`templates/`），删掉团队包里已经没有的旧模板和它们的软链，并重建指向别处的软链；五处 agent 目录里已有的 `<团队名>-herdr-cowork` 真实目录或普通文件会被删掉再重建；hc 模板目录里内容不同的同名普通文件和目录不动。卸载：删 `~/.agents/skills/<团队名>-herdr-cowork`、那五处 `<团队名>-herdr-cowork` 软链，以及 hc 模板目录里指向该目录的软链。
+加 `--with-cowork --team <团队名或团队包目录>` 还会安装一个 cowork 团队 skill（[skills/herdr-cowork/](skills/herdr-cowork/README.md)，可选）。它把仓库里的通用协议和团队包的配置拼成一份 SKILL.md，装到 `~/.agents/skills/<团队名>-herdr-cowork/`，软链到同样五处 agent 目录，并把团队包里的角色模板软链进 hc 的模板目录 `~/.config/herdr-core/templates/`（hc 的模板目录不存在则跳过并列出）。团队包放在 `~/.config/cowork/teams/<团队名>/`，不随本仓库分发（仓库自带的示例包除外），做法见 [skills/herdr-cowork/README.md](skills/herdr-cowork/README.md)；不带 `--team` 只列出已知的团队包。hc 模板目录里已有的同名普通文件，内容与要链接到的模板相同的会换成软链；这一步不需要 `--yes`，内容不变。带 `--yes` 时，它会覆盖该目录里受管理的四项（SKILL.md、README.md、team.md、`templates/`），删掉团队包里已经没有的旧模板和它们的软链，并重建指向别处的软链；五处 agent 目录里已有的 `<团队名>-herdr-cowork` 真实目录或普通文件会被删掉再重建；hc 模板目录里内容不同的同名普通文件和目录不动。卸载：删 `~/.agents/skills/<团队名>-herdr-cowork`、那五处 `<团队名>-herdr-cowork` 软链，以及 hc 模板目录里指向该目录的软链。
 ````
 
 - [ ] **Step 2: README, the list of what the package runs**
@@ -1989,7 +1994,7 @@ Find the paragraph that ends with the words `卸载：`rm -rf ~/.agents/skills/h
 Find the bullet that begins `- **Skills（可选，`--with-skills`）：**` and ends with `其他 agent 走各自的审批流程。` (lines 68–70). Insert after it, as the next item of that list:
 
 ````markdown
-- **Cowork（可选，`--with-cowork --team`）：** 不联网——`skills/cowork/` 里的通用协议和本机的团队包拼成一份 skill，连同五处 agent 软链和 hc 模板目录里的软链（位置见上）。它是一套提示词协议：采用它的 agent 作为 Commander 经 `hc` 启动成员 CLI；成员按团队包模板的 `command` 运行，权限随各自的 harness，其中执行角色可以按用户的点名提交、推送、发布部署，开发角色在实现任务时会自行提交。团队包不随本仓库分发。它的 frontmatter `allowed-tools` 同样只在 Claude Code 里预授权 `hc`/`herdr-app`。
+- **Cowork（可选，`--with-cowork --team`）：** 不联网——`skills/herdr-cowork/` 里的通用协议和本机的团队包拼成一份 skill，连同五处 agent 软链和 hc 模板目录里的软链（位置见上）。它是一套提示词协议：采用它的 agent 作为 Commander 经 `hc` 启动成员 CLI；成员按团队包模板的 `command` 运行，权限随各自的 harness，其中执行角色可以按用户的点名提交、推送、发布部署，开发角色在实现任务时会自行提交。团队包不随本仓库分发。它的 frontmatter `allowed-tools` 同样只在 Claude Code 里预授权 `hc`/`herdr-app`。
 ````
 
 - [ ] **Step 3: README, how installed users upgrade**
@@ -1997,7 +2002,7 @@ Find the bullet that begins `- **Skills（可选，`--with-skills`）：**` and 
 Find the line in "更新本仓库" that ends `（软链指向目录，会跟随新副本）。`. That section is one run of lines without blank lines between them. Insert after it, as one more line of the run:
 
 ````markdown
-`skills/cowork/` 的通用协议更新后，没有直接改过装好的文件的，重跑 `sh install.sh --with-cowork --team <团队名> --yes`；直接改过的（包括对 Commander 说过"以后 X 都用 Y"），把 `--team` 指向 `~/.agents/skills/<团队名>-herdr-cowork`，本机的改动才会保留。验收：`sh skills/cowork/tests/install-cowork.sh`。
+`skills/herdr-cowork/` 的通用协议更新后，没有直接改过装好的文件的，重跑 `sh install.sh --with-cowork --team <团队名> --yes`；直接改过的（包括对 Commander 说过"以后 X 都用 Y"），把 `--team` 指向 `~/.agents/skills/<团队名>-herdr-cowork`，本机的改动才会保留。验收：`sh skills/herdr-cowork/tests/install-cowork.sh`。
 ````
 
 - [ ] **Step 4: Align the design document with what is built**
@@ -2019,13 +2024,13 @@ Replace it with:
 **`--team`.** The design says a value that is an existing directory is used as that directory. The installer takes a value with a slash as a path, a relative one against the caller's directory, and a value without a slash as a name. A team called `mods` is then never taken for the repo's `mods/`. Find this paragraph:
 
 ```markdown
-`--team` 的值是一个已存在的目录时，就用那个目录。否则依次找 `~/.config/cowork/teams/<团队名>` 和仓库里的 `skills/cowork/teams/<团队名>`，本机的优先。报告里写明用的是哪一个。下文说的"已知团队包"，指这两个位置下的每个子目录。
+`--team` 的值是一个已存在的目录时，就用那个目录。否则依次找 `~/.config/cowork/teams/<团队名>` 和仓库里的 `skills/herdr-cowork/teams/<团队名>`，本机的优先。报告里写明用的是哪一个。下文说的"已知团队包"，指这两个位置下的每个子目录。
 ```
 
 Replace it with:
 
 ```markdown
-`--team` 的值带斜杠时按路径处理：绝对路径原样使用，相对路径相对于运行安装器时所在的目录。不带斜杠时按团队名处理，依次找 `~/.config/cowork/teams/<团队名>` 和仓库里的 `skills/cowork/teams/<团队名>`，本机的优先。这样，一个和仓库顶层目录同名的团队不会被当成目录。报告里写明用的是哪一个。下文说的"已知团队包"，指这两个位置下的每个子目录。
+`--team` 的值带斜杠时按路径处理：绝对路径原样使用，相对路径相对于运行安装器时所在的目录。不带斜杠时按团队名处理，依次找 `~/.config/cowork/teams/<团队名>` 和仓库里的 `skills/herdr-cowork/teams/<团队名>`，本机的优先。这样，一个和仓库顶层目录同名的团队不会被当成目录。报告里写明用的是哪一个。下文说的"已知团队包"，指这两个位置下的每个子目录。
 ```
 
 Find this row of the exit-code table:
@@ -2040,16 +2045,16 @@ Replace it with:
 | `--team` 不带 `--with-cowork`，值为空也算给了 | 2 | 报错 |
 ```
 
-**The order of `skills/cowork/README.md`.** The design lists its sections in another order. The file puts installing before making a team pack, because the example pack can be installed as it is. Find this sentence:
+**The order of `skills/herdr-cowork/README.md`.** The design lists its sections in another order. The file puts installing before making a team pack, because the example pack can be installed as it is. Find this sentence:
 
 ```markdown
-**`skills/cowork/README.md`** 给人看，装进 skill 目录。内容依次是：这是什么；能说什么；标准流程；为什么这样设计；怎么做一个团队包；安装、升级、卸载；个人改动放在哪。
+**`skills/herdr-cowork/README.md`** 给人看，装进 skill 目录。内容依次是：这是什么；能说什么；标准流程；为什么这样设计；怎么做一个团队包；安装、升级、卸载；个人改动放在哪。
 ```
 
 Replace it with:
 
 ```markdown
-**`skills/cowork/README.md`** 给人看，装进 skill 目录。内容依次是：这是什么；能说什么；角色与模型；标准流程；为什么这样设计；安装、升级、卸载；做一个团队包；个人改动放在哪；文件在哪。安装放在做团队包之前，因为示例包可以直接装。
+**`skills/herdr-cowork/README.md`** 给人看，装进 skill 目录。内容依次是：这是什么；能说什么；角色与模型；标准流程；为什么这样设计；安装、升级、卸载；做一个团队包；个人改动放在哪；文件在哪。安装放在做团队包之前，因为示例包可以直接装。
 ```
 
 The remaining amendments came out of the reviews, which ran the plan and then tried to break the installer behind the tests' back.
@@ -2069,7 +2074,7 @@ Replace it with:
 Find this row of the exit-code table:
 
 ```markdown
-| 团队包不合法，或仓库缺 `skills/cowork/PROTOCOL.md`、`skills/cowork/README.md` | 1 | 报错 |
+| 团队包不合法，或仓库缺 `skills/herdr-cowork/PROTOCOL.md`、`skills/herdr-cowork/README.md` | 1 | 报错 |
 ```
 
 Insert after it:
@@ -2221,13 +2226,13 @@ Replace it with:
 **The acceptance list.** The script now covers more than the eighteen checks the design listed. Find this sentence:
 
 ```markdown
-`skills/cowork/tests/install-cowork.sh` 覆盖下面 18 项，全部在一次性的 `$HOME` 里进行：
+`skills/herdr-cowork/tests/install-cowork.sh` 覆盖下面 18 项，全部在一次性的 `$HOME` 里进行：
 ```
 
 Replace it with:
 
 ```markdown
-`skills/cowork/tests/install-cowork.sh` 覆盖下面各项，全部在一次性的 `$HOME` 里进行。脚本的小节按执行顺序编号，和这里的条目不一一对应：
+`skills/herdr-cowork/tests/install-cowork.sh` 覆盖下面各项，全部在一次性的 `$HOME` 里进行。脚本的小节按执行顺序编号，和这里的条目不一一对应：
 ```
 
 Find the last item of that list:
@@ -2282,7 +2287,7 @@ git commit -m "docs: document --with-cowork --team"
 - [ ] **Step 1: Run everything once more from a clean state**
 
 ```bash
-sh -n install.sh && sh skills/cowork/tests/install-cowork.sh > /tmp/cowork-final.txt 2>&1; echo "exit=$?"
+sh -n install.sh && sh skills/herdr-cowork/tests/install-cowork.sh > /tmp/cowork-final.txt 2>&1; echo "exit=$?"
 tail -n 1 /tmp/cowork-final.txt
 ```
 
@@ -2306,7 +2311,7 @@ not_clean /tmp/cowork-branch.diff && found=1
 [ "$found" = 0 ] && echo "clean"
 ```
 
-Expected: the file list of this plan (the design, this plan, `skills/cowork/**`, `install.sh`, `README.md`), then `clean`. If it prints a line instead, the branch's history holds a term from the list: stop and remove it before anyone sees the branch.
+Expected: the file list of this plan (the design, this plan, `skills/herdr-cowork/**`, `install.sh`, `README.md`), then `clean`. If it prints a line instead, the branch's history holds a term from the list: stop and remove it before anyone sees the branch.
 
 - [ ] **Step 3: Confirm nothing was pushed and `main` is untouched**
 

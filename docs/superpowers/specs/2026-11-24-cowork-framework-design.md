@@ -20,7 +20,7 @@
 3. **模板的源文件放进 skill 目录，安装时逐个软链进 hc 的模板目录。** 实测（hc 0.1.22）：hc 只读 `~/.config/herdr-core/templates`，不扫子目录，会跟随软链。
 4. **团队包自成一体。** 每个团队包带完整的五个模板。角色提示词因此有两份：示例包一份，各团队包一份。等出现第二个真实团队包，再考虑把角色正文收回仓库统一维护。
 5. **可选安装。** 默认不装，和 `--with-skills` 一致，因为写入面超出了 Herdr home。
-6. **放在 `skills/cowork/`，不设顶层的 `cowork/`，也不设 `plugins/`。** 它装出来的东西是 skill，和 `skills/herdr-cowork/` 并列。"插件"在各家 agent 里格式和安装命令都不同，仓里出现 `plugins/`，容易被当成某个 agent 的插件去找安装命令。验收脚本跟着放进 `skills/cowork/tests/`，仓库顶层不新增目录。
+6. **放进 `skills/herdr-cowork/`，和收编的 herdr-cowork skill 同一个目录。** 两种装法装出来的都是 skill，名字都以 `herdr-cowork` 结尾：`--with-skills` 装收编的那一份，`--with-cowork` 装团队 skill。源文件因此放在一处，`skills/` 下只有一个目录。`--with-skills` 只读 `SKILL.md` 一个文件，同目录多出来的文件不影响它。验收脚本跟着放进 `skills/herdr-cowork/tests/`，仓库顶层不新增目录，也不设 `plugins/`："插件"在各家 agent 里格式和安装命令都不同，仓里出现 `plugins/`，容易被当成某个 agent 的插件去找安装命令。
 
 被否决的做法：
 
@@ -30,10 +30,11 @@
 | 通用 skill 和团队 skill 各一份，运行时写"以通用为准" | 跨 skill 的"以 X 为准"已经实测会把前台带偏 |
 | 团队包的托管与分发 | 维护者决定暂不分发，团队包先留在本机 |
 | 把 cowork 做成 agent 插件，放在 `plugins/cowork/` | Claude Code、zcode、Codex、pi、omp 的插件都装得下"一份 skill 加随附文件"，但格式各不相同，要维护五套清单；而且没有一家会在安装时执行脚本，拼合和软链仍然要自己写。维护者只是觉得顶层目录别扭，不需要插件 |
+| `skills/` 下另设 `skills/cowork/`，和 `skills/herdr-cowork/` 并列 | 装出来的都是 skill，名字都以 `herdr-cowork` 结尾，源文件没有理由分在两处；`skills/` 下两个并列的目录，维护者看着别扭，于是并进 `skills/herdr-cowork/`。`--with-skills` 只读 `SKILL.md` 一个文件，不受影响 |
 
 ## 目标
 
-1. 本仓新增 `skills/cowork/`：通用协议、通用说明、示例团队包，以及它的验收脚本。
+1. 本仓在 `skills/herdr-cowork/` 里新增：通用协议、通用说明、示例团队包，以及它的验收脚本。收编的 `SKILL.md` 不动。
 2. `install.sh --with-cowork --team <团队名或团队包目录>` 把两者拼合并安装到 `~/.agents/skills/<团队名>-herdr-cowork/`，再软链到各 agent 和 hc 的模板目录。
 3. README 如实披露安装面和运行期执行面。
 4. 安装器的行为由一个可重复运行的验收脚本覆盖。
@@ -42,7 +43,7 @@
 
 - 团队包的托管、分发和迁移工具。
 - 把角色正文抽回仓库统一维护。
-- 改动 `skills/herdr-cowork/` 和 `sync.sh`。
+- 改动收编的 `skills/herdr-cowork/SKILL.md` 和 `sync.sh`。
 - 卸载参数。README 写手工卸载步骤。
 - 不带团队包的裸通用 skill。
 
@@ -52,7 +53,7 @@
 
 | 层 | 内容 | 在哪 |
 |---|---|---|
-| 通用层 | 铁律、动作菜单、首条任务固定写法、启动与等待、停靠报告、故障处理 | 本仓的 `skills/cowork/PROTOCOL.md` |
+| 通用层 | 铁律、动作菜单、首条任务固定写法、启动与等待、停靠报告、故障处理 | 本仓的 `skills/herdr-cowork/PROTOCOL.md` |
 | 团队层 | 团队名、命名前缀、角色与默认模型、工作区与仓别名、评审暂存目录、产物目录、本机要留意的其他规则 | 团队包的 `team.md` |
 | 个人层 | 改默认模型、加减仓别名 | 团队包，或装好的模板 |
 
@@ -62,9 +63,9 @@
 
 ```
 skills/
-├── herdr-cowork/            现有：收编的 skill，--with-skills 原样安装
-└── cowork/                  新增：装出来是 skill 的源材料
-    ├── PROTOCOL.md
+└── herdr-cowork/
+    ├── SKILL.md              现有：收编的 skill，--with-skills 只装这一个文件
+    ├── PROTOCOL.md           新增：装出来是 skill 的源材料
     ├── README.md
     ├── teams/
     │   └── example/
@@ -79,7 +80,7 @@ skills/
         └── install-cowork.sh
 ```
 
-`skills/cowork/` 的根目录没有 `SKILL.md`，因为它不是一份现成的 skill，装的时候才拼出来。现有的 `--with-skills` 只读 `skills/herdr-cowork/`，不受影响。
+`PROTOCOL.md` 不是一份现成的 skill，装的时候才拼出来，所以不叫 `SKILL.md`。同目录的 `SKILL.md` 是收编的 herdr-cowork skill，另一套协议；现有的 `--with-skills` 只读它这一个文件，不受影响。
 
 **PROTOCOL.md** 是一份带 frontmatter 的通用协议，本身不能当 skill 用：
 
@@ -133,7 +134,7 @@ prefix: example
 - `prefix` 是模板名和成员名的前缀，字符规则同上。在本机要唯一：hc 的模板目录是平的，两个团队共用前缀会争同一个模板名。
 - 模板是完整的 hc 模板：文件名就是模板名，frontmatter 的 `name` 必须等于文件名（不带 `.md`），长度不超过 32。这是 hc 对模板名的规则。
 
-**示例团队包** `skills/cowork/teams/example/` 用占位的工作区和不带模型参数的命令。别人可以先装它，再照它做一个自己的团队包。它同时是五个角色提示词的标准版本。
+**示例团队包** `skills/herdr-cowork/teams/example/` 用占位的工作区和不带模型参数的命令。别人可以先装它，再照它做一个自己的团队包。它同时是五个角色提示词的标准版本。
 
 ### 3. 安装命令
 
@@ -141,7 +142,7 @@ prefix: example
 sh install.sh --with-cowork --team <团队名或团队包目录>
 ```
 
-`--team` 的值带斜杠时按路径处理：绝对路径原样使用，相对路径相对于运行安装器时所在的目录。不带斜杠时按团队名处理，依次找 `~/.config/cowork/teams/<团队名>` 和仓库里的 `skills/cowork/teams/<团队名>`，本机的优先。这样，一个和仓库顶层目录同名的团队不会被当成目录。报告里写明用的是哪一个。下文说的"已知团队包"，指这两个位置下的每个子目录。
+`--team` 的值带斜杠时按路径处理：绝对路径原样使用，相对路径相对于运行安装器时所在的目录。不带斜杠时按团队名处理，依次找 `~/.config/cowork/teams/<团队名>` 和仓库里的 `skills/herdr-cowork/teams/<团队名>`，本机的优先。这样，一个和仓库顶层目录同名的团队不会被当成目录。报告里写明用的是哪一个。下文说的"已知团队包"，指这两个位置下的每个子目录。
 
 ### 4. install.sh
 
@@ -155,7 +156,7 @@ sh install.sh --with-cowork --team <团队名或团队包目录>
 | `--team` 不带 `--with-cowork`，值为空也算给了 | 2 | 报错 |
 | `--team` 后面没有值 | 2 | 报错 |
 | 团队包找不到 | 1 | 报错，并列出已知的团队包 |
-| 团队包不合法，或仓库缺 `skills/cowork/PROTOCOL.md`、`skills/cowork/README.md` | 1 | 报错 |
+| 团队包不合法，或仓库缺 `skills/herdr-cowork/PROTOCOL.md`、`skills/herdr-cowork/README.md` | 1 | 报错 |
 | 前缀已被另一个团队使用 | 1 | 报错，点名那个团队 |
 | 参数未知 | 2 | 用法提示里列出新增的两个参数 |
 
@@ -165,11 +166,11 @@ sh install.sh --with-cowork --team <团队名或团队包目录>
 - 必须有的四个小节标题都存在。
 - `team.md` 的 frontmatter 以 `---` 闭合，不用 Windows 换行。这两种毛病下登记项照样读得出来，正文却不会进入 SKILL.md。
 - `templates/` 里五个 `<前缀>-<键>.md` 齐全。每个模板，包括多出来的，frontmatter 的 `name` 等于文件名，文件名最长 32 个字符、不带空白。长度是 hc 对名字的上限；名字里有空白还会把要建的软链清单拆散。
-- `skills/cowork/PROTOCOL.md` 里 `name: TEAM-herdr-cowork` 恰好出现一次。
+- `skills/herdr-cowork/PROTOCOL.md` 里 `name: TEAM-herdr-cowork` 恰好出现一次。
 
 **拼合。** 目标 SKILL.md 由四段依次拼成：
 
-1. `skills/cowork/PROTOCOL.md`，其中占位行替换成 `name: <团队名>-herdr-cowork`。
+1. `skills/herdr-cowork/PROTOCOL.md`，其中占位行替换成 `name: <团队名>-herdr-cowork`。
 2. 一个空行。
 3. 一行分界注释，说明以上是通用协议、以下是团队配置，并提示个人改动落在团队包或模板里，改 `team.md` 后要重跑安装器。
 4. `team.md` 去掉开头 frontmatter 之后的正文，紧跟 frontmatter 的空行不算。
@@ -181,7 +182,7 @@ sh install.sh --with-cowork --team <团队名或团队包目录>
 | 内容 | 位置 |
 |---|---|
 | SKILL.md，即拼合结果 | `~/.agents/skills/<团队名>-herdr-cowork/SKILL.md` |
-| README.md | 同一目录，是 `skills/cowork/README.md` 的原样副本 |
+| README.md | 同一目录，是 `skills/herdr-cowork/README.md` 的原样副本 |
 | team.md | 同一目录，是团队包 `team.md` 的原样副本 |
 | `templates/*.md` | 同一目录的 `templates/`，是团队包模板的原样副本 |
 | agent 软链 | 五处，和 `--with-skills` 相同：claude、codex、gemini、opencode、pi |
@@ -223,7 +224,7 @@ sh install.sh --with-cowork --team <团队名或团队包目录>
 
 ### 5. 测试
 
-`skills/cowork/tests/install-cowork.sh` 在一次性的 `$HOME` 里跑 `install.sh`，不联网、不碰真实目录：
+`skills/herdr-cowork/tests/install-cowork.sh` 在一次性的 `$HOME` 里跑 `install.sh`，不联网、不碰真实目录：
 
 - PATH 上放 `herdr-automations` 和 `herdr-app` 的空壳，让安装器既不构建也不联网，再不带上真实 PATH 里的 `herdr-app`。
 - 现场生成一个团队包。
@@ -242,7 +243,7 @@ sh install.sh --with-cowork --team <团队名或团队包目录>
   - `--yes` 的破坏范围：覆盖 skill 目录里受管理的四项；删除多余的旧模板和它们的软链；重建指向别处的软链；删除 agent 软链位置上的真实目录或普通文件。
 - 升级和手工卸载的步骤。
 
-**`skills/cowork/README.md`** 给人看，装进 skill 目录。内容依次是：这是什么；能说什么；角色与模型；标准流程；为什么这样设计；安装、升级、卸载；做一个团队包；个人改动放在哪；文件在哪。安装放在做团队包之前，因为示例包可以直接装。
+**`skills/herdr-cowork/README.md`** 给人看，装进 skill 目录。内容依次是：这是什么；能说什么；角色与模型；标准流程；为什么这样设计；安装、升级、卸载；做一个团队包；个人改动放在哪；文件在哪。安装放在做团队包之前，因为示例包可以直接装。
 
 ### 7. 升级与卸载
 
@@ -263,7 +264,7 @@ sh install.sh --with-cowork --team <团队名或团队包目录>
 
 ## 验收
 
-`skills/cowork/tests/install-cowork.sh` 覆盖下面各项，全部在一次性的 `$HOME` 里进行。脚本的小节按执行顺序编号，和这里的条目不一一对应：
+`skills/herdr-cowork/tests/install-cowork.sh` 覆盖下面各项，全部在一次性的 `$HOME` 里进行。脚本的小节按执行顺序编号，和这里的条目不一一对应：
 
 1. `sh -n install.sh` 语法通过。
 2. 不带 `--with-cowork`：没有 cowork 相关的动作和输出。
