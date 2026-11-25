@@ -12,6 +12,8 @@
 
 **Reading the file blocks:** Every block that creates a file is preceded by a marker line `<!-- file: path -->` and fenced with four backticks. The block content is the file, byte for byte, and each file ends with exactly one newline.
 
+**After this plan.** This plan reproduces the branch up to commit `050fc98`. Later commits on the same branch renamed the flag to `--with-team`, put the default pack at the top of `skills/herdr-backend/` (`team.md`, `templates/backend-*.md`), split each stage's code into `skills/herdr-cowork/install.sh` and `skills/herdr-backend/install.sh`, and made `prefix` name template files only, with members named `<key>-<short>`. Decision 8 of the design document records why. From `050fc98` on, this plan is a record of how the work was done, not a recipe.
+
 **Where the files live.** The files started in a directory of their own, `skills/cowork/`. The maintainer found that name unclear and had them moved into `skills/herdr-cowork/`, beside the vendored `SKILL.md`. Having then named the skill after the post it serves, the maintainer had them moved into a directory of their own again, `skills/herdr-backend/`, next to `skills/herdr-cowork/`. The paths below are the ones that hold now.
 
 **What the skill is called.** Tasks 0 to 4 were also executed when the installer named a team's skill `<team>-herdr-cowork`, from a `team` field of team.md. The maintainer then chose names of the form `herdr-<post>`, so a later commit made the name a field of team.md (`name`; the example's is `herdr-example`), filled it into the fixed sentence as well as into the name line, and refused two things: the name `herdr-cowork`, and a directory at the target that is not a team skill. The text below is that later state.

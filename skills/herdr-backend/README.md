@@ -1,4 +1,4 @@
-# cowork
+# herdr-backend
 
 在 Herdr 的任一终端里跑一个 agent，对它说一句话，它替你起对应的角色成员。
 每做完一件事它就停下来报状态，下一步做什么由你决定。
@@ -7,12 +7,12 @@
 
 ## 它是什么
 
-cowork 是一套 Commander 调度协议，分成两部分：
+这是一套 Commander 调度协议，分成两部分：
 
 - **通用协议**：`PROTOCOL.md`。铁律、动作菜单、启动与等待、停靠报告。对每个团队都一样，随 oh-my-herdr 分发。
-- **团队包**：一个目录，里面是 `team.md`（角色与默认模型、命名前缀、工作区、路径）和 `templates/`（五个角色模板）。属于那个团队，不随 oh-my-herdr 分发（仓库里的示例包除外）。
+- **团队包**：一个目录，里面是 `team.md`（角色与默认模型、模板前缀、工作区、路径）和 `templates/`（五个角色模板）。属于那个团队，不随 oh-my-herdr 分发（仓库里的默认包除外）。
 
-安装时两者拼成一份 SKILL.md，装成一个 agent skill，名字就是团队包里写的那个，比如 `herdr-backend`。Commander 运行时只读这一个文件。
+安装时两者拼成一份 SKILL.md，装成一个 agent skill，名字就是团队包里写的那个，比如 `herdr-backend`。Commander 运行时只读这一个文件。仓库里的默认包就放在这个目录，`team.md` 和 `templates/` 与协议并列。
 
 它和 herdr-cowork skill 是两套独立的协议，一个会话里只用一套：那一套以 TEAM.md 为注册表，仓库里在 `skills/herdr-cowork/`，`--with-skills` 装它；这一套不用 TEAM.md。
 
@@ -46,7 +46,7 @@ cowork 是一套 Commander 调度协议，分成两部分：
 | test | 测试 | 推用例 |
 | run | 执行 | 验证、回归、记基线，以及提交、推送、发布部署、运行服务 |
 
-模板名是 `<前缀>-<键>`。每个角色用哪个 agent、哪个模型，写在团队包里那个模板的 `command` 一行。
+模板文件的命名是 `<prefix>-<键>.md`；成员名不带前缀，是 `<键>-<短名>`，评审是 `review-<短名>-<类型>-r<N>`。每个角色用哪个 agent、哪个模型，写在团队包里那个模板的 `command` 一行。
 
 ## 标准流程（参照，不必每次走全）
 
@@ -65,18 +65,19 @@ cowork 是一套 Commander 调度协议，分成两部分：
 - 评审每次一轮。要不要评审、评几轮，由你每次点名决定。
 - 执行成员只做点名的那一步。推送、发布部署是对外操作，成员在后台运行、工具调用不弹确认，所以靠"只做点名的步骤"和"动手前核对目标"来约束。
 - 通用和团队分开装。通用协议进 oh-my-herdr，团队包留在本机或团队自己的仓里；Commander 读到的仍然只有一份文件。
+- 每段的代码跟着各自的文件走。`skills/herdr-cowork/install.sh` 和 `skills/herdr-backend/install.sh` 分别实现两种装法，根 `install.sh` 只解析参数、装 mod 和布局，按时序调用它们。
 
 ## 安装、升级、卸载
 
 ### 安装
 
-仓库里带了一个示例团队包，可以直接装上试：`sh install.sh --with-cowork --team example`，装出来的 skill 叫 `herdr-example`。它的工作区是示例值，正式用之前照"做一个团队包"做一个自己的。
+仓库里带了一个默认团队包，可以直接装上试：`sh install.sh --with-team --team herdr-backend`，装出来的 skill 叫 `herdr-backend`。它的工作区是占位值，正式用之前照"做一个团队包"做一个自己的。
 
 ```
-sh install.sh --with-cowork --team <团队名或团队包目录>
+sh install.sh --with-team --team <包名或团队包目录>
 ```
 
-`--team` 的值带斜杠时按路径处理：绝对路径原样使用，相对路径相对于你运行命令的目录。不带斜杠时按团队名处理，依次找 `~/.config/cowork/teams/<团队名>` 和仓库里的 `skills/herdr-backend/teams/<团队名>`，本机的优先。不带 `--team` 只列出已知的团队包，不安装。
+`--team` 的值带斜杠时按路径处理：绝对路径原样使用，相对路径相对于你运行命令的目录。不带斜杠时按名字处理，先找 `~/.config/herdr-teams/<名字>/`，再找仓库里这个目录的默认包（`team.md` 的 `name` 等于该名字时）。不带 `--team` 只列出已知的团队包，不安装。
 
 skill 叫什么，由团队包 `team.md` 里的 `name` 决定，和 `--team` 给的目录名无关。一个名字在一台机器上只能装一份。
 
@@ -88,7 +89,7 @@ skill 叫什么，由团队包 `team.md` 里的 `name` 决定，和 `--team` 给
 ├── README.md         本页
 ├── team.md           团队配置的副本
 └── templates/        五个角色模板
-~/.config/herdr-core/templates/<前缀>-*.md     软链到上面的模板
+~/.config/herdr-core/templates/<prefix>-*.md   软链到上面的模板
 ```
 
 另有一组 agent 软链，做法和 `--with-skills` 相同：Claude Code、Codex、Gemini、OpenCode、pi 各一条指向那个 skill 目录；home 目录不存在的 agent 被跳过并列出。加 `--yes` 时，这些位置上已有的真实目录或普通文件会被删掉再重建。hc 的模板目录 `~/.config/herdr-core/templates/` 不存在时（比如 hc 还没装），模板软链整体跳过并列出；建好这个目录后重跑一次。没有这些软链，Commander 起不了成员。以上用法在 hc 0.1.22 上验证过。
@@ -101,7 +102,7 @@ hc 的模板目录里如果已经有同名的普通文件：内容和这次要�
 
 `--yes` 是整个安装器的参数：它同时覆盖有差异的 mod 和布局，和平常升级时一样。
 
-- 通用协议更新后，并且没有直接改过装好的文件：`sh install.sh --with-cowork --team <团队名> --yes`。
+- 通用协议更新后，并且没有直接改过装好的文件：`sh install.sh --with-team --team <包名> --yes`。
 - 直接改过装好的文件（包括对 Commander 说过"以后 X 都用 Y"）：升级时把 `--team` 指向 `~/.agents/skills/<skill 名>`。装好的目录本身就是一个合法的团队包，这样新的通用协议和本机的改动都会保留。指向原来的团队包再加 `--yes`，会用旧值覆盖这些改动。同目录升级时更新的是 SKILL.md 和 README.md；`team.md` 和 `templates/` 是你的，不动。
 - 改 skill 的名字：改 `team.md` 里的 `name`，再装一次，会装出另一份 skill。旧的那份照"卸载"清掉；不清的话它还占着模板前缀，新的一份会被拒绝。
 
@@ -111,28 +112,29 @@ hc 的模板目录里如果已经有同名的普通文件：内容和这次要�
 
 ## 做一个团队包
 
-1. 复制示例包：
+1. 复制默认包：
 
    ```
-   mkdir -p ~/.config/cowork/teams
-   cp -R skills/herdr-backend/teams/example ~/.config/cowork/teams/<名字>
+   mkdir -p ~/.config/herdr-teams/<名字>
+   cp skills/herdr-backend/team.md ~/.config/herdr-teams/<名字>/
+   cp -R skills/herdr-backend/templates ~/.config/herdr-teams/<名字>/
    ```
 
-2. 改 `team.md`。开头两行是登记项。`name` 是装出来的 skill 的名字：只用小写字母、数字和连字符，不以连字符开头或结尾，最长 64 个字符，不能叫 `herdr-cowork`。建议按岗位起，比如 `herdr-backend`、`herdr-data`。`prefix` 是模板名和成员名的前缀，只用小写字母、数字和连字符。两个都在本机要唯一：一个名字只能装一份；hc 的模板目录是平的，两个团队共用前缀会争同一个模板名，安装器会拒绝后装的那个，并点名先装的那个。成员名最长 32 个字符（hc 的上限）。评审的名字最长，是 <前缀>-review-<短名>-<类型>-r<N>，前缀和短名的长度加起来不要超过 13。正文四个小节：角色与模板、命名前缀、工作区、路径。你的环境里有会把 Commander 带偏的具体规则时，再加第五小节"本机要留意的其他规则"，一条一行，比如"某仓的项目记忆里有'自审后再交'，这条对 Commander 不适用"。
-3. 改 `templates/`。文件名是 `<前缀>-<键>.md`，frontmatter 的 `name` 与文件名相同，文件名最长 32 个字符，不能带空白。`command` 换成你要的 agent 和模型，模型参数直接写进去（如 `claude --model <模型>`），"用 X"才有可替换的位置。
-4. 安装：`sh install.sh --with-cowork --team <名字>`。
+2. 改 `team.md`。开头两行是登记项。`name` 是装出来的 skill 的名字：只用小写字母、数字和连字符，不以连字符开头或结尾，最长 64 个字符，不能叫 `herdr-cowork`。建议按岗位起，比如 `herdr-backend`、`herdr-data`。`prefix` 是模板文件名的前缀，只用小写字母、数字和连字符；成员名不带前缀，不受它影响。两个都在本机要唯一：一个名字只能装一份；hc 的模板目录是平的，两个团队共用前缀会争同一个模板名，安装器会拒绝后装的那个，并点名先装的那一个。短名不超过 10 个字符，成员名就放得进 hc 的 32 个字符。正文四个小节：角色与模板、命名前缀、工作区、路径。你的环境里有会把 Commander 带偏的具体规则时，再加第五小节"本机要留意的其他规则"，一条一行，比如"某仓的项目记忆里有'自审后再交'，这条对 Commander 不适用"。
+3. 改 `templates/`。文件名是 `<prefix>-<键>.md`，frontmatter 的 `name` 与文件名相同，文件名最长 32 个字符，不能带空白。`command` 换成你要的 agent 和模型，模型参数直接写进去（如 `claude --model <模型>`），"用 X"才有可替换的位置。
+4. 安装：`sh install.sh --with-team --team <名字>`。
 
 团队包不进任何 git 仓时，自己记得备份。
 
 ## 个人改动放在哪
 
 - 换某个角色的默认模型：对 Commander 说"以后 X 都用 Y"，或者改团队包里那个模板的 `command` 一行再重装。前者改的是装好的那份模板，团队包不会跟着变。
-- 加减仓别名：改 `team.md` 的"工作区"，然后重跑 `sh install.sh --with-cowork --team <改过的那个目录> --yes`。SKILL.md 末尾的团队配置是安装时拼进去的，不重跑就不变。
+- 加减仓别名：改 `team.md` 的"工作区"，然后重跑 `sh install.sh --with-team --team <改过的那个目录> --yes`。SKILL.md 末尾的团队配置是安装时拼进去的，不重跑就不变。
 
 ## 文件在哪
 
-- oh-my-herdr 里：`skills/herdr-backend/PROTOCOL.md`、`skills/herdr-backend/README.md`、`skills/herdr-backend/teams/example/`。
+- oh-my-herdr 里：`skills/herdr-backend/PROTOCOL.md`、`skills/herdr-backend/README.md`、`skills/herdr-backend/team.md`、`skills/herdr-backend/templates/`、`skills/herdr-backend/install.sh`。
 - herdr-cowork skill 本体：`skills/herdr-cowork/SKILL.md`，从外部收编，`--with-skills` 只装它。
-- 团队包：`~/.config/cowork/teams/<团队名>/`，也可以是任何目录，用 `--team` 给路径。仓库自带的示例在 `skills/herdr-backend/teams/example/`，按团队名也找得到它。
+- 团队包：`~/.config/herdr-teams/<名字>/`，也可以是任何目录，用 `--team` 给路径。仓库自带的默认包就是 `skills/herdr-backend/`，按名字也找得到它。
 - 装好的 skill：`~/.agents/skills/<skill 名>/`。
-- 验收：`sh skills/herdr-backend/tests/install-cowork.sh`。
+- 验收：`sh skills/herdr-backend/tests/install-team.sh`。
