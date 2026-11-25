@@ -14,7 +14,7 @@ cowork 是一套 Commander 调度协议，分成两部分：
 
 安装时两者拼成一份 SKILL.md，装成一个 agent skill，名字就是团队包里写的那个，比如 `herdr-backend`。Commander 运行时只读这一个文件。
 
-它和 herdr-cowork skill 是两套独立的协议，一个会话里只用一套：那一套以 TEAM.md 为注册表，仓库里就是同目录的 `SKILL.md`，`--with-skills` 装它；这一套不用 TEAM.md。
+它和 herdr-cowork skill 是两套独立的协议，一个会话里只用一套：那一套以 TEAM.md 为注册表，仓库里在 `skills/herdr-cowork/`，`--with-skills` 装它；这一套不用 TEAM.md。
 
 ## 能说什么
 
@@ -76,7 +76,7 @@ cowork 是一套 Commander 调度协议，分成两部分：
 sh install.sh --with-cowork --team <团队名或团队包目录>
 ```
 
-`--team` 的值带斜杠时按路径处理：绝对路径原样使用，相对路径相对于你运行命令的目录。不带斜杠时按团队名处理，依次找 `~/.config/cowork/teams/<团队名>` 和仓库里的 `skills/herdr-cowork/teams/<团队名>`，本机的优先。不带 `--team` 只列出已知的团队包，不安装。
+`--team` 的值带斜杠时按路径处理：绝对路径原样使用，相对路径相对于你运行命令的目录。不带斜杠时按团队名处理，依次找 `~/.config/cowork/teams/<团队名>` 和仓库里的 `skills/herdr-backend/teams/<团队名>`，本机的优先。不带 `--team` 只列出已知的团队包，不安装。
 
 skill 叫什么，由团队包 `team.md` 里的 `name` 决定，和 `--team` 给的目录名无关。一个名字在一台机器上只能装一份。
 
@@ -115,7 +115,7 @@ hc 的模板目录里如果已经有同名的普通文件：内容和这次要�
 
    ```
    mkdir -p ~/.config/cowork/teams
-   cp -R skills/herdr-cowork/teams/example ~/.config/cowork/teams/<名字>
+   cp -R skills/herdr-backend/teams/example ~/.config/cowork/teams/<名字>
    ```
 
 2. 改 `team.md`。开头两行是登记项。`name` 是装出来的 skill 的名字：只用小写字母、数字和连字符，不以连字符开头或结尾，最长 64 个字符，不能叫 `herdr-cowork`。建议按岗位起，比如 `herdr-backend`、`herdr-data`。`prefix` 是模板名和成员名的前缀，只用小写字母、数字和连字符。两个都在本机要唯一：一个名字只能装一份；hc 的模板目录是平的，两个团队共用前缀会争同一个模板名，安装器会拒绝后装的那个，并点名先装的那个。成员名最长 32 个字符（hc 的上限）。评审的名字最长，是 <前缀>-review-<短名>-<类型>-r<N>，前缀和短名的长度加起来不要超过 13。正文四个小节：角色与模板、命名前缀、工作区、路径。你的环境里有会把 Commander 带偏的具体规则时，再加第五小节"本机要留意的其他规则"，一条一行，比如"某仓的项目记忆里有'自审后再交'，这条对 Commander 不适用"。
@@ -131,8 +131,8 @@ hc 的模板目录里如果已经有同名的普通文件：内容和这次要�
 
 ## 文件在哪
 
-- oh-my-herdr 里：`skills/herdr-cowork/PROTOCOL.md`、`skills/herdr-cowork/README.md`、`skills/herdr-cowork/teams/example/`。
-- herdr-cowork skill 本体：同目录的 `SKILL.md`，从外部收编，`--with-skills` 只装它。
-- 团队包：`~/.config/cowork/teams/<团队名>/`，也可以是任何目录，用 `--team` 给路径。仓库自带的示例在 `skills/herdr-cowork/teams/example/`，按团队名也找得到它。
+- oh-my-herdr 里：`skills/herdr-backend/PROTOCOL.md`、`skills/herdr-backend/README.md`、`skills/herdr-backend/teams/example/`。
+- herdr-cowork skill 本体：`skills/herdr-cowork/SKILL.md`，从外部收编，`--with-skills` 只装它。
+- 团队包：`~/.config/cowork/teams/<团队名>/`，也可以是任何目录，用 `--team` 给路径。仓库自带的示例在 `skills/herdr-backend/teams/example/`，按团队名也找得到它。
 - 装好的 skill：`~/.agents/skills/<skill 名>/`。
-- 验收：`sh skills/herdr-cowork/tests/install-cowork.sh`。
+- 验收：`sh skills/herdr-backend/tests/install-cowork.sh`。

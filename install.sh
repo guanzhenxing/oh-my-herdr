@@ -9,7 +9,7 @@
 #   sh install.sh --dry-run    report only, write nothing
 #   sh install.sh --with-skills  also install the herdr-cowork skill (opt-in; see README)
 #   sh install.sh --with-cowork --team <name|path>  also install one cowork team skill and link its
-#                              templates into hc (opt-in; see skills/herdr-cowork/README.md)
+#                              templates into hc (opt-in; see skills/herdr-backend/README.md)
 set -e
 # Where the user ran the installer: a relative --team path is resolved against it.
 cowork_caller_dir=$(pwd)
@@ -51,7 +51,7 @@ fi
 # anything is decided, so a bad pack exits without a single write. A team pack is a
 # directory holding team.md (frontmatter: name, prefix) and templates/. The name is
 # the team's to choose: it is the name of the skill that gets installed.
-cowork_dir=$(pwd)/skills/herdr-cowork
+cowork_dir=$(pwd)/skills/herdr-backend
 # The known team packs: every subdirectory of the two places a pack can live.
 cowork_known_teams() {
   for cw_root in "$HOME/.config/cowork/teams" "$cowork_dir/teams"; do
@@ -145,7 +145,7 @@ if [ "$WITH_COWORK" = 1 ]; then
   done
   [ "$(grep -c '^name: TEAM-SKILL$' "$cowork_dir/PROTOCOL.md")" = 1 ] || cowork_die "$cowork_dir/PROTOCOL.md must hold exactly one line 'name: TEAM-SKILL'"
   cowork_skill_dir="$HOME/.agents/skills/$cowork_skill_name"
-  # herdr-cowork is the skill that --with-skills installs from this very directory.
+  # herdr-cowork is the skill that --with-skills installs from skills/herdr-cowork/.
   [ "$cowork_skill_name" != herdr-cowork ] || cowork_die "team.md: 'name' must not be herdr-cowork: that is the name of the skill installed by --with-skills"
   # The name is the team's to choose, so it can be the name of a skill that is already
   # here. A directory without a team.md is not a team skill: it is never written to,
@@ -455,7 +455,7 @@ fi
 # cowork (--with-cowork --team): everything is decided here, before the dry-run gate,
 # and only written after it. SKILL.md is assembled into a temp file now, so the
 # comparison with the installed copy is exact and a dry run writes nothing.
-cowork_boundary='<!-- 以上是通用协议，由 oh-my-herdr 的 skills/herdr-cowork/PROTOCOL.md 提供；以下是本团队配置，安装时取自团队包的 team.md。个人改动请落在团队包或装好的模板里（改 team.md 后要重跑安装器才生效），不要直接改本文件。 -->'
+cowork_boundary='<!-- 以上是通用协议，由 oh-my-herdr 的 skills/herdr-backend/PROTOCOL.md 提供；以下是本团队配置，安装时取自团队包的 team.md。个人改动请落在团队包或装好的模板里（改 team.md 后要重跑安装器才生效），不要直接改本文件。 -->'
 cowork_hc_dir="$HOME/.config/herdr-core/templates"
 cowork_skill_state=""; cowork_links=""; cowork_link_notes=""; cowork_hc_links=""; cw_notes=""
 cowork_stale=""; cowork_hc_stale=""
