@@ -33,10 +33,12 @@ const firstExecutable = async (paths) => {
   return null;
 };
 
-// terminal-notifier refuses a value that starts with '[', '(', '{' or a quote
-// (exit 2, "Could not read the value") — codex's "[ ! ] Action Required" titles
-// hit this — and says to escape it with a backslash, which it then strips.
-const esc = (s) => (/^[\[({'"]/.test(s) ? `\\${s}` : s);
+// terminal-notifier reads values through NSUserDefaults, which parses them as
+// property lists: a value starting with '[', '(', '{' or '-' is refused (exit 2,
+// "Could not read the value") and one starting with '"' is silently emptied —
+// codex's "[ ! ] Action Required" titles hit the first kind. A leading backslash
+// escapes it (only ever the first character); the display strips it again.
+const esc = (s) => (/^[\[({"-]/.test(s) ? `\\${s}` : s);
 
 export default class DesktopNotifications extends View {
   init(_props, cx) {
@@ -105,9 +107,10 @@ export default class DesktopNotifications extends View {
       if (this.app) args.push("-execute", `${sh(this.app)} do agent.focus ${sh(JSON.stringify({ terminal: n.address }))}`);
       const r = await notifier(this.bin, args).catch(() => ({ code: -1 }));
       if (r.code === 0) return;
-      // Not allowed to notify (System Settings > Notifications), or broken: use macOS's
-      // own for this one, and try terminal-notifier again next time (it may be allowed by then).
-      return this.post("osascript", n);
+      // Broken, or not allowed (System Settings > Notifications). No osascript
+      // rerun: a toast that opens Script Editor when clicked is worse than none,
+      // Herdr's own in-app alert still fires, and the next toast retries anyway.
+      console.log(`desktop-notifications: terminal-notifier exited ${r.code}`);
     }
     if (sender === "osascript") {
       const script = "on run argv\ndisplay notification (item 3 of argv) with title (item 1 of argv) subtitle (item 2 of argv)\nend run";

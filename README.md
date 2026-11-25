@@ -42,7 +42,7 @@ agent skill（收编在 `skills/`，可选）。SKILL.md 会装到 `~/.agents/sk
 （agent 导航、侧栏面板开关、关闭 tab 和 pane）只在本布局显示时生效，不会遮蔽你其他布局的按键。
 
 需要 `git` 和已登录的 `gh`。用量窗口读取 `claude` 和 `codex` CLI；Automations 使用随包的
-`herdr-automations` CLI（由 `install.sh` 安装；缺失时面板会说明）；桌面通知在装有 `terminal-notifier` 时使用它。在 macOS、Herdr 0.1.16 上构建并测试——macOS 优先：Linux 和 Windows 上 issue 预填改为把任务放进剪贴板（用 Ctrl+Shift+V 粘贴），Windows 没有 space 休眠功能（hibernate mod 会在运行时警告）；其余功能走相同
+`herdr-automations` CLI（由 `install.sh` 安装；缺失时面板会说明）；桌面通知在装有 `terminal-notifier` 时使用它——macOS 上可跑 `mods/desktop-notifications/setup-notifier.sh`，装一个带 Herdr 图标的副本（`~/Applications/Herdr Notifier.app`），系统通知就统一由它发出、点击即聚焦对应 agent。在 macOS、Herdr 0.1.16 上构建并测试——macOS 优先：Linux 和 Windows 上 issue 预填改为把任务放进剪贴板（用 Ctrl+Shift+V 粘贴），Windows 没有 space 休眠功能（hibernate mod 会在运行时警告）；其余功能走相同
 路径。所有 mod 会执行和访问什么，见下文「这个布局会运行什么」。
 
 ## 这个布局会运行什么
